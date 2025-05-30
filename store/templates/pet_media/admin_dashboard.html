@@ -1,0 +1,384 @@
+<!-- File: templates/pet_media/admin_dashboard.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .admin-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px 0;
+        margin-bottom: 30px;
+    }
+
+    .stats-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+        margin-bottom: 20px;
+        border-left: 4px solid #667eea;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+
+    .stats-label {
+        color: #666;
+        font-weight: 500;
+        margin-top: 10px;
+    }
+
+    .boarding-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+        border-left: 4px solid #28a745;
+    }
+
+    .boarding-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .pet-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .pet-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        margin-right: 15px;
+    }
+
+    .pet-details h6 {
+        margin: 0;
+        color: #333;
+        font-weight: 600;
+    }
+
+    .pet-details small {
+        color: #666;
+    }
+
+    .media-count {
+        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .btn-media {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-media:hover {
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+
+    .recent-media-card {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        transition: transform 0.3s ease;
+    }
+
+    .recent-media-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .media-thumbnail {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+    }
+
+    .media-info {
+        padding: 15px;
+    }
+
+    .media-info h6 {
+        margin: 0 0 5px 0;
+        font-size: 0.9rem;
+        color: #333;
+    }
+
+    .media-info small {
+        color: #666;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #666;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        color: #ddd;
+    }
+
+    .quick-actions {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #eee;
+    }
+
+    .section-title {
+        color: #333;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    @media (max-width: 768px) {
+        .stats-number {
+            font-size: 2rem;
+        }
+
+        .pet-info {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .pet-avatar {
+            margin: 0 0 10px 0;
+        }
+
+        .action-buttons {
+            justify-content: center;
+        }
+    }
+</style>
+
+<!-- Admin Header -->
+<div class="admin-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="display-6 mb-2">📸 Pet Media Management</h1>
+                <p class="mb-0">Upload and manage photos/videos for currently boarded pets</p>
+            </div>
+            <div>
+                <a href="/media/upload/" class="btn btn-light btn-lg">
+                    <i class="fas fa-plus me-2"></i>Upload Media
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="stats-card">
+                <div class="stats-number">{{ stats.active_boardings }}</div>
+                <div class="stats-label">Active Boardings</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stats-card">
+                <div class="stats-number">{{ stats.total_media }}</div>
+                <div class="stats-label">Total Media Files</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stats-card">
+                <div class="stats-number">{{ stats.recent_uploads }}</div>
+                <div class="stats-label">This Week</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stats-card">
+                <div class="stats-number">{{ stats.total_views }}</div>
+                <div class="stats-label">Total Views</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h5 class="mb-3">Quick Actions</h5>
+        <div class="row">
+            <div class="col-md-3 col-sm-6 mb-3">
+                <a href="/media/upload/" class="btn btn-success w-100">
+                    <i class="fas fa-camera me-2"></i>Upload New Media
+                </a>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <a href="/media/analytics/" class="btn btn-info w-100">
+                    <i class="fas fa-chart-bar me-2"></i>View Analytics
+                </a>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <a href="/boarding/admin/" class="btn btn-primary w-100">
+                    <i class="fas fa-cog me-2"></i>Boarding Admin
+                </a>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <a href="/boarding/admin/slots/" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-calendar me-2"></i>Manage Slots
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Currently Boarded Pets -->
+        <div class="col-lg-8">
+            <div class="section-header">
+                <h4 class="section-title">🏠 Currently Boarded Pets</h4>
+                <span class="badge bg-success">{{ current_bookings|length }} Active</span>
+            </div>
+
+            {% if current_bookings %}
+                {% for booking in current_bookings %}
+                <div class="boarding-card" data-aos="fade-up">
+                    <div class="pet-info">
+                        <div class="pet-avatar">
+                            {% if booking.pet_type == 'dog' %}🐕
+                            {% elif booking.pet_type == 'cat' %}🐱
+                            {% elif booking.pet_type == 'bird' %}🐦
+                            {% elif booking.pet_type == 'rabbit' %}🐰
+                            {% else %}🐾{% endif %}
+                        </div>
+                        <div class="pet-details">
+                            <h6>{{ booking.pet_name }} ({{ booking.get_pet_type_display }})</h6>
+                            <small>Owner: {{ booking.owner_name }} • Check-out: {{ booking.end_date|date:"M d, Y" }}</small>
+                        </div>
+                        <div class="ms-auto">
+                            <span class="media-count">{{ booking.media_count }} media file{{ booking.media_count|pluralize }}</span>
+                        </div>
+                    </div>
+
+                    <div class="booking-details">
+                        <p class="mb-2"><strong>Boarding Period:</strong> {{ booking.start_date|date:"M d" }} - {{ booking.end_date|date:"M d, Y" }}</p>
+                        {% if booking.special_instructions %}
+                        <p class="mb-2"><strong>Special Instructions:</strong> {{ booking.special_instructions|truncatewords:15 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="action-buttons">
+                        <a href="/media/upload/{{ booking.id }}/" class="btn-media">
+                            <i class="fas fa-camera me-2"></i>Upload Media
+                        </a>
+                        <a href="/media/manage/{{ booking.id }}/" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-images me-2"></i>Manage Media
+                        </a>
+                        <a href="/my-bookings/{{ booking.id }}/" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-eye me-2"></i>View Booking
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-home"></i>
+                    <h4>No Active Boardings</h4>
+                    <p class="text-muted">There are currently no pets being boarded.</p>
+                    <a href="/boarding/admin/" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>View All Bookings
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Media Uploads -->
+        <div class="col-lg-4">
+            <div class="section-header">
+                <h5 class="section-title">📷 Recent Uploads</h5>
+                <a href="/media/analytics/" class="btn btn-outline-primary btn-sm">View All</a>
+            </div>
+
+            {% if recent_media %}
+                {% for media in recent_media %}
+                <div class="recent-media-card">
+                    {% if media.is_photo %}
+                        <img src="{{ media.media_file.url }}" alt="{{ media.caption }}" class="media-thumbnail">
+                    {% else %}
+                        <div class="media-thumbnail">
+                            <i class="fas fa-video fa-2x"></i>
+                            <div class="mt-2">{{ media.file_extension|upper }} Video</div>
+                        </div>
+                    {% endif %}
+
+                    <div class="media-info">
+                        <h6>{{ media.booking.pet_name }}</h6>
+                        <small class="text-muted">
+                            {{ media.uploaded_at|timesince }} ago
+                            {% if media.caption %}
+                                <br>"{{ media.caption|truncatewords:8 }}"
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-camera"></i>
+                    <h5>No Recent Uploads</h5>
+                    <p class="text-muted">Start uploading media for your boarded pets!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

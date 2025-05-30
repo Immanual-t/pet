@@ -1,0 +1,390 @@
+<!-- File: templates/pet_media/media_detail.html -->
+
+{% extends 'base.html' %}
+{% load custom_filter %}
+
+{% block content %}
+<style>
+    .detail-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 0;
+        margin-bottom: 30px;
+    }
+
+    .media-container {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .media-display {
+        max-width: 100%;
+        max-height: 70vh;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        margin-bottom: 20px;
+    }
+
+    .media-info {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 20px 0;
+        text-align: left;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #666;
+    }
+
+    .info-value {
+        color: #333;
+    }
+
+    .pet-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: inline-block;
+        margin: 10px 0;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: transform 0.3s ease;
+        border: none;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+        text-decoration: none;
+    }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-secondary-custom {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        color: white;
+    }
+
+    .btn-download {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+    }
+
+    .related-media {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .related-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .related-item {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+        position: relative;
+    }
+
+    .related-item:hover {
+        transform: translateY(-3px);
+    }
+
+    .related-thumb {
+        width: 100%;
+        height: 100px;
+        object-fit: cover;
+    }
+
+    .related-video {
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        height: 100px;
+    }
+
+    .related-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(transparent, rgba(0,0,0,0.7));
+        color: white;
+        padding: 10px 8px 5px;
+        font-size: 0.8rem;
+        text-align: center;
+    }
+
+    .caption-box {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border: 1px solid #2196f3;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 20px 0;
+        position: relative;
+    }
+
+    .caption-box::before {
+        content: '"';
+        position: absolute;
+        top: -10px;
+        left: 15px;
+        font-size: 3rem;
+        color: #2196f3;
+        background: white;
+        padding: 0 5px;
+    }
+
+    .caption-text {
+        font-style: italic;
+        color: #1976d2;
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    @media (max-width: 768px) {
+        .action-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn-action {
+            width: 200px;
+            text-align: center;
+        }
+
+        .related-grid {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .related-thumb,
+        .related-video {
+            height: 80px;
+        }
+    }
+</style>
+
+<!-- Detail Header -->
+<div class="detail-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="display-6 mb-2">📷 Pet Media</h1>
+                <p class="mb-0">Viewing update for {{ media.booking.pet_name }}</p>
+            </div>
+            <div>
+                <a href="/pet-updates/" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Updates
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            <!-- Main Media Display -->
+            <div class="media-container">
+                <!-- Pet Badge -->
+                <div class="pet-badge">
+                    {% if media.booking.pet_type == 'dog' %}🐕
+                    {% elif media.booking.pet_type == 'cat' %}🐱
+                    {% elif media.booking.pet_type == 'bird' %}🐦
+                    {% elif media.booking.pet_type == 'rabbit' %}🐰
+                    {% else %}🐾{% endif %}
+                    {{ media.booking.pet_name }}
+                </div>
+
+                <!-- Media Content -->
+                {% if media.is_photo %}
+                    <img src="{{ media.media_file.url }}" alt="{{ media.caption }}" class="media-display">
+                {% else %}
+                    <video controls class="media-display">
+                        <source src="{{ media.media_file.url }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                {% endif %}
+
+                <!-- Caption -->
+                {% if media.caption %}
+                <div class="caption-box">
+                    <p class="caption-text">{{ media.caption }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <a href="{{ media.media_file.url }}" download class="btn-action btn-download">
+                        <i class="fas fa-download me-2"></i>Download
+                    </a>
+                    <a href="/pet-updates/booking/{{ media.booking.id }}/" class="btn-action btn-primary-custom">
+                        <i class="fas fa-images me-2"></i>View All for {{ media.booking.pet_name }}
+                    </a>
+                    <a href="/my-bookings/{{ media.booking.id }}/" class="btn-action btn-secondary-custom">
+                        <i class="fas fa-info-circle me-2"></i>Booking Details
+                    </a>
+                </div>
+            </div>
+
+            <!-- Media Information -->
+            <div class="media-info">
+                <h5 class="mb-3"><i class="fas fa-info-circle me-2"></i>Media Information</h5>
+
+                <div class="info-row">
+                    <span class="info-label">Type:</span>
+                    <span class="info-value">
+                        <i class="fas fa-{% if media.is_photo %}image{% else %}video{% endif %} me-1"></i>
+                        {{ media.get_media_type_display }}
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Uploaded:</span>
+                    <span class="info-value">{{ media.get_upload_time_safe|date:"F d, Y g:i A" }}</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Time ago:</span>
+                    <span class="info-value">{{ media.get_upload_time_safe|timesince }} ago</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Uploaded by:</span>
+                    <span class="info-value">{{ media.uploaded_by }}</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">File size:</span>
+                    <span class="info-value">{{ media.file_size_mb }} MB</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Boarding period:</span>
+                    <span class="info-value">
+                        {{ media.booking.start_date|date:"M d" }} - {{ media.booking.end_date|date:"M d, Y" }}
+                    </span>
+                </div>
+
+                {% if media.booking.special_instructions %}
+                <div class="info-row">
+                    <span class="info-label">Special care:</span>
+                    <span class="info-value">{{ media.booking.special_instructions|truncatewords:20 }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Related Media -->
+            {% if related_media %}
+            <div class="related-media">
+                <h5 class="mb-3">
+                    <i class="fas fa-images me-2"></i>More from {{ media.booking.pet_name }}'s Stay
+                </h5>
+
+                <div class="related-grid">
+                    {% for related in related_media %}
+                    <a href="/pet-updates/media/{{ related.id }}/" class="related-item">
+                        {% if related.is_photo %}
+                            <img src="{{ related.media_file.url }}" alt="{{ related.caption }}" class="related-thumb">
+                        {% else %}
+                            <div class="related-video">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        {% endif %}
+
+                        <div class="related-overlay">
+                            <div>{{ related.get_upload_time_safe|timesince }} ago</div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+
+                <div class="text-center mt-3">
+                    <a href="/pet-updates/booking/{{ media.booking.id }}/" class="btn btn-outline-primary">
+                        <i class="fas fa-th me-2"></i>View All Updates for {{ media.booking.pet_name }}
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<script>
+// Add some interactive functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide alerts after 5 seconds
+    setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(alert => {
+            if (alert.classList.contains('show')) {
+                bootstrap.Alert.getOrCreateInstance(alert).close();
+            }
+        });
+    }, 5000);
+
+    // Add keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            window.history.back();
+        }
+    });
+
+    // Add loading states for action buttons
+    document.querySelectorAll('.btn-action').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (!this.href.includes('download')) {
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}

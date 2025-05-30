@@ -1,0 +1,465 @@
+<!-- File: templates/pet_media/customer_dashboard.html -->
+
+{% extends 'base.html' %}
+{% load custom_filter %}
+
+{% block content %}
+<style>
+    .updates-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 0;
+        margin-bottom: 30px;
+    }
+
+    .stats-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+        margin-bottom: 20px;
+        border-left: 4px solid #667eea;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+
+    .stats-label {
+        color: #666;
+        font-weight: 500;
+        margin-top: 10px;
+    }
+
+    .booking-updates-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+        border-left: 4px solid #28a745;
+    }
+
+    .booking-updates-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .pet-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f8f9fa;
+    }
+
+    .pet-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        margin-right: 20px;
+    }
+
+    .pet-info h5 {
+        margin: 0;
+        color: #333;
+        font-weight: 600;
+    }
+
+    .pet-info small {
+        color: #666;
+    }
+
+    .media-preview {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .media-thumb {
+        width: 100%;
+        height: 120px;
+        border-radius: 10px;
+        object-fit: cover;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    .media-thumb:hover {
+        transform: scale(1.05);
+    }
+
+    .video-thumb {
+        position: relative;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        border-radius: 10px;
+    }
+
+    .video-thumb::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 0;
+        height: 0;
+        border-left: 15px solid white;
+        border-top: 10px solid transparent;
+        border-bottom: 10px solid transparent;
+    }
+
+    .recent-updates {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+
+    .update-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #f8f9fa;
+    }
+
+    .update-item:last-child {
+        border-bottom: none;
+    }
+
+    .update-thumb {
+        width: 60px;
+        height: 60px;
+        border-radius: 10px;
+        object-fit: cover;
+        margin-right: 15px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    .update-info h6 {
+        margin: 0 0 5px 0;
+        color: #333;
+        font-weight: 600;
+    }
+
+    .update-info small {
+        color: #666;
+    }
+
+    .view-all-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: transform 0.3s ease;
+        display: inline-block;
+        margin-top: 15px;
+    }
+
+    .view-all-btn:hover {
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #666;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        color: #ddd;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #eee;
+    }
+
+    .section-title {
+        color: #333;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .new-badge {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-left: 10px;
+    }
+
+    .quick-nav {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .quick-nav-btn {
+        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        margin: 5px;
+        display: inline-block;
+        transition: transform 0.3s ease;
+    }
+
+    .quick-nav-btn:hover {
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+        .stats-number {
+            font-size: 2rem;
+        }
+
+        .pet-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .pet-avatar {
+            margin: 0 0 15px 0;
+        }
+
+        .media-preview {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .media-thumb {
+            height: 100px;
+        }
+
+        .quick-nav-btn {
+            display: block;
+            margin: 10px 0;
+            text-align: center;
+        }
+    }
+</style>
+
+<!-- Updates Header -->
+<div class="updates-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="display-6 mb-2">📱 My Pet Updates</h1>
+                <p class="mb-0">View photos and videos of your pets during their stay</p>
+            </div>
+            <div>
+                <a href="/my-bookings/" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>My Bookings
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4 col-sm-6">
+            <div class="stats-card">
+                <div class="stats-number">{{ stats.total_updates }}</div>
+                <div class="stats-label">Total Updates</div>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6">
+            <div class="stats-card">
+                <div class="stats-number">{{ stats.bookings_with_media }}</div>
+                <div class="stats-label">Pets with Updates</div>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6">
+            <div class="stats-card">
+                <div class="stats-number">{{ stats.updates_this_week }}</div>
+                <div class="stats-label">This Week</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Navigation -->
+    <div class="quick-nav">
+        <h6 class="mb-3">Quick Navigation</h6>
+        <a href="/pet-updates/timeline/" class="quick-nav-btn">
+            <i class="fas fa-timeline me-2"></i>Timeline View
+        </a>
+        <a href="/pet-updates/search/" class="quick-nav-btn">
+            <i class="fas fa-search me-2"></i>Search Updates
+        </a>
+        <a href="/boarding/" class="quick-nav-btn">
+            <i class="fas fa-plus me-2"></i>New Booking
+        </a>
+    </div>
+
+    <!-- Recent Updates Section -->
+    {% if recent_media %}
+    <div class="recent-updates">
+        <div class="section-header">
+            <h5 class="section-title">🕒 Recent Updates</h5>
+            <a href="/pet-updates/timeline/" class="btn btn-outline-primary btn-sm">View All</a>
+        </div>
+
+        {% for media in recent_media %}
+        <div class="update-item">
+            {% if media.is_photo %}
+                <img src="{{ media.media_file.url }}" alt="{{ media.caption }}" class="update-thumb">
+            {% else %}
+                <div class="update-thumb video-thumb">
+                    <i class="fas fa-video"></i>
+                </div>
+            {% endif %}
+
+            <div class="update-info">
+                <h6>{{ media.booking.pet_name }}
+                    {% if media.uploaded_at|timesince_days < 1 %}
+                        <span class="new-badge">NEW</span>
+                    {% endif %}
+                </h6>
+                <small class="text-muted">
+                    {{ media.uploaded_at|timesince }} ago by {{ media.uploaded_by }}
+                    {% if media.caption %}
+                        <br>"{{ media.caption|truncatewords:10 }}"
+                    {% endif %}
+                </small>
+            </div>
+
+            <div class="ms-auto">
+                <a href="/pet-updates/media/{{ media.id }}/" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-eye me-1"></i>View
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Bookings with Updates -->
+    <div class="section-header">
+        <h4 class="section-title">🐾 Your Pets' Updates</h4>
+    </div>
+
+    {% if bookings_with_updates %}
+        {% for booking in bookings_with_updates %}
+        <div class="booking-updates-card" data-aos="fade-up">
+            <div class="pet-header">
+                <div class="pet-avatar">
+                    {% if booking.pet_type == 'dog' %}🐕
+                    {% elif booking.pet_type == 'cat' %}🐱
+                    {% elif booking.pet_type == 'bird' %}🐦
+                    {% elif booking.pet_type == 'rabbit' %}🐰
+                    {% else %}🐾{% endif %}
+                </div>
+                <div class="pet-info">
+                    <h5>{{ booking.pet_name }} ({{ booking.get_pet_type_display }})</h5>
+                    <small>
+                        Boarding: {{ booking.start_date|date:"M d" }} - {{ booking.end_date|date:"M d, Y" }} •
+                        {{ booking.media_count }} update{{ booking.media_count|pluralize }}
+                        {% if booking.latest_media %}
+                            • Latest: {{ booking.latest_media.uploaded_at|timesince }} ago
+                        {% endif %}
+                    </small>
+                </div>
+                <div class="ms-auto">
+                    <span class="badge bg-success">{{ booking.media_count }} update{{ booking.media_count|pluralize }}</span>
+                </div>
+            </div>
+
+            <!-- Media Preview -->
+            <div class="media-preview">
+                {% for media in booking.media_updates.all|slice:":6" %}
+                    {% if media.is_visible %}
+                        <a href="/pet-updates/media/{{ media.id }}/">
+                            {% if media.is_photo %}
+                                <img src="{{ media.media_file.url }}" alt="{{ media.caption }}" class="media-thumb">
+                            {% else %}
+                                <div class="media-thumb video-thumb">
+                                    <i class="fas fa-video"></i>
+                                </div>
+                            {% endif %}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if booking.media_count > 6 %}
+                <div class="media-thumb" style="background: #f8f9fa; display: flex; align-items: center; justify-content: center; color: #666; font-weight: 600;">
+                    +{{ booking.media_count|add:"-6" }} more
+                </div>
+                {% endif %}
+            </div>
+
+            <a href="/pet-updates/booking/{{ booking.id }}/" class="view-all-btn">
+                <i class="fas fa-images me-2"></i>View All Updates for {{ booking.pet_name }}
+            </a>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-camera"></i>
+            <h4>No Updates Yet</h4>
+            <p class="text-muted mb-4">
+                You don't have any pet updates yet. Updates will appear here when your pets are being boarded and our staff shares photos or videos.
+            </p>
+            <a href="/boarding/" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Make a Booking
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Custom filter for days calculation -->
+<script>
+// Add custom functionality if needed
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh page every 5 minutes to check for new updates
+    setTimeout(() => {
+        window.location.reload();
+    }, 5 * 60 * 1000);
+});
+</script>
+
+{% endblock %}

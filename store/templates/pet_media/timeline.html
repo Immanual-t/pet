@@ -1,0 +1,553 @@
+<!-- File: templates/pet_media/timeline.html -->
+
+{% extends 'base.html' %}
+{% load custom_filter %}
+
+{% block content %}
+<style>
+    .timeline-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 0;
+        margin-bottom: 30px;
+    }
+
+    .timeline-container {
+        position: relative;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .timeline-line {
+        position: absolute;
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(to bottom, #667eea, #764ba2);
+        transform: translateX(-50%);
+        z-index: 1;
+    }
+
+    .timeline-date {
+        position: relative;
+        margin-bottom: 50px;
+        z-index: 2;
+    }
+
+    .date-marker {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        border: 4px solid #667eea;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #667eea;
+        font-size: 0.9rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        z-index: 3;
+    }
+
+    .timeline-content {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin: 0 60px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        position: relative;
+    }
+
+    .timeline-content::before {
+        content: '';
+        position: absolute;
+        top: 30px;
+        width: 0;
+        height: 0;
+        border: 15px solid transparent;
+    }
+
+    .timeline-content.left::before {
+        right: -30px;
+        border-left-color: white;
+    }
+
+    .timeline-content.right::before {
+        left: -30px;
+        border-right-color: white;
+    }
+
+    .date-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f8f9fa;
+    }
+
+    .date-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #333;
+        margin: 0;
+    }
+
+    .media-count-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .media-timeline-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 15px;
+    }
+
+    .timeline-media-item {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .timeline-media-item:hover {
+        transform: translateY(-3px);
+    }
+
+    .timeline-thumbnail {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+    }
+
+    .timeline-video-thumb {
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        height: 120px;
+        position: relative;
+    }
+
+    .timeline-video-thumb::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 0;
+        height: 0;
+        border-left: 12px solid white;
+        border-top: 8px solid transparent;
+        border-bottom: 8px solid transparent;
+        margin-left: 3px;
+    }
+
+    .timeline-media-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(transparent, rgba(0,0,0,0.8));
+        color: white;
+        padding: 15px 8px 8px;
+        font-size: 0.8rem;
+    }
+
+    .timeline-media-info {
+        padding: 12px;
+        background: white;
+    }
+
+    .media-time {
+        font-size: 0.8rem;
+        color: #666;
+        font-weight: 500;
+    }
+
+    .media-caption-small {
+        font-size: 0.85rem;
+        color: #666;
+        font-style: italic;
+        margin-top: 5px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .pet-indicator {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        background: rgba(255,255,255,0.9);
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .empty-timeline {
+        text-align: center;
+        padding: 60px 20px;
+        color: #666;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        margin: 60px;
+    }
+
+    .empty-timeline i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        color: #ddd;
+    }
+
+    .timeline-stats {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .stat-item {
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #667eea;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .pagination {
+        justify-content: center;
+        margin-top: 50px;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .timeline-line {
+            left: 30px;
+        }
+
+        .date-marker {
+            left: 30px;
+            width: 40px;
+            height: 40px;
+            font-size: 0.8rem;
+        }
+
+        .timeline-content {
+            margin: 0 0 0 80px;
+        }
+
+        .timeline-content::before {
+            display: none;
+        }
+
+        .timeline-content.left,
+        .timeline-content.right {
+            margin: 0 0 0 80px;
+        }
+
+        .media-timeline-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .timeline-thumbnail,
+        .timeline-video-thumb {
+            height: 100px;
+        }
+
+        .empty-timeline {
+            margin: 20px 0 20px 80px;
+        }
+    }
+</style>
+
+<!-- Timeline Header -->
+<div class="timeline-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="display-6 mb-2">📅 Pet Updates Timeline</h1>
+                <p class="mb-0">Chronological view of all your pets' updates</p>
+            </div>
+            <div>
+                <a href="/pet-updates/" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Statistics -->
+    <div class="timeline-stats">
+        <h5 class="mb-0">Your Pet Updates Summary</h5>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">{{ total_media }}</div>
+                <div class="stat-label">Total Updates</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ timeline_data|length }}</div>
+                <div class="stat-label">Days with Updates</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">
+                    {% with photo_count=0 %}
+                        {% for day in timeline_data %}
+                            {% for media in day.media_list %}
+                                {% if media.is_photo %}
+                                    {% with photo_count=photo_count|add:1 %}{% endwith %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                        {{ photo_count }}
+                    {% endwith %}
+                </div>
+                <div class="stat-label">Photos</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">
+                    {% with video_count=0 %}
+                        {% for day in timeline_data %}
+                            {% for media in day.media_list %}
+                                {% if media.is_video %}
+                                    {% with video_count=video_count|add:1 %}{% endwith %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                        {{ video_count }}
+                    {% endwith %}
+                </div>
+                <div class="stat-label">Videos</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline -->
+    {% if timeline_data %}
+        <div class="timeline-container">
+            <div class="timeline-line"></div>
+
+            {% for day_data in timeline_data %}
+                <div class="timeline-date">
+                    <div class="date-marker">
+                        {{ day_data.date|date:"M d" }}
+                    </div>
+
+                    <div class="timeline-content {% cycle 'left' 'right' %}">
+                        <div class="date-header">
+                            <h3 class="date-title">{{ day_data.date|date:"F d, Y" }}</h3>
+                            <span class="media-count-badge">
+                                {{ day_data.count }} update{{ day_data.count|pluralize }}
+                            </span>
+                        </div>
+
+                        <div class="media-timeline-grid">
+                            {% for media in day_data.media_list %}
+                                <div class="timeline-media-item" onclick="viewTimelineMedia('{{ media.media_file.url }}', '{{ media.media_type }}', '{{ media.caption|escape }}', '{{ media.booking.pet_name }}')">
+
+                                    <!-- Pet Indicator -->
+                                    <div class="pet-indicator">
+                                        {% if media.booking.pet_type == 'dog' %}🐕
+                                        {% elif media.booking.pet_type == 'cat' %}🐱
+                                        {% elif media.booking.pet_type == 'bird' %}🐦
+                                        {% elif media.booking.pet_type == 'rabbit' %}🐰
+                                        {% else %}🐾{% endif %}
+                                        {{ media.booking.pet_name }}
+                                    </div>
+
+                                    {% if media.is_photo %}
+                                        <img src="{{ media.media_file.url }}" alt="{{ media.caption }}" class="timeline-thumbnail">
+                                    {% else %}
+                                        <div class="timeline-video-thumb">
+                                            <i class="fas fa-video"></i>
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="timeline-media-info">
+                                        <div class="media-time">
+                                            {{ media.uploaded_at|date:"g:i A" }} • {{ media.uploaded_by }}
+                                        </div>
+                                        {% if media.caption %}
+                                            <div class="media-caption-small">"{{ media.caption }}"</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Timeline pagination">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    {% else %}
+        <div class="empty-timeline">
+            <i class="fas fa-calendar-times"></i>
+            <h4>No Updates Yet</h4>
+            <p class="text-muted mb-4">Your timeline will show here once your pets start their boarding adventures and our staff begins sharing updates.</p>
+            <a href="/boarding/" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Make a Booking
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Timeline Media Modal -->
+<div class="modal fade" id="timelineModal" tabindex="-1" aria-labelledby="timelineModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="timelineModalLabel">Pet Update</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center" id="timelineModalBody">
+                <!-- Media content will be loaded here -->
+            </div>
+            <div class="modal-footer" id="timelineModalFooter">
+                <!-- Caption and details will be shown here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewTimelineMedia(url, type, caption, petName) {
+    const modalBody = document.getElementById('timelineModalBody');
+    const modalFooter = document.getElementById('timelineModalFooter');
+    const modalTitle = document.getElementById('timelineModalLabel');
+
+    // Update modal title
+    modalTitle.textContent = `Update for ${petName}`;
+
+    // Clear previous content
+    modalBody.innerHTML = '';
+    modalFooter.innerHTML = '';
+
+    // Add media content
+    if (type === 'photo') {
+        modalBody.innerHTML = `<img src="${url}" class="img-fluid" style="max-height: 70vh; border-radius: 10px;" alt="${petName} photo">`;
+    } else {
+        modalBody.innerHTML = `
+            <video controls class="w-100" style="max-height: 70vh; border-radius: 10px;">
+                <source src="${url}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        `;
+    }
+
+    // Add caption if exists
+    if (caption && caption.trim() !== '') {
+        modalFooter.innerHTML = `
+            <div class="w-100 text-start">
+                <small class="text-muted">Message from our staff:</small>
+                <p class="mb-0 fst-italic">"${caption}"</p>
+            </div>
+        `;
+    }
+
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('timelineModal'));
+    modal.show();
+}
+
+// Smooth scrolling and animations
+document.addEventListener('DOMContentLoaded', function() {
+    // Intersection Observer for timeline animations
+    const timelineItems = document.querySelectorAll('.timeline-date');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
+
+    timelineItems.forEach(item => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(20px)';
+        item.style.transition = 'all 0.6s ease';
+        observer.observe(item);
+    });
+
+    // Auto-hide modals on escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('timelineModal'));
+            if (modal) {
+                modal.hide();
+            }
+        }
+    });
+});
+</script>
+
+{% endblock %}

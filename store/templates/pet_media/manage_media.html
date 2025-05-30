@@ -1,0 +1,640 @@
+<!-- File: templates/pet_media/manage_media.html -->
+
+{% extends 'base.html' %}
+{% load custom_filter %}
+
+{% block content %}
+<style>
+    .manage-header {
+        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        color: white;
+        padding: 40px 0;
+        margin-bottom: 30px;
+    }
+
+    .pet-info-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border-left: 4px solid #17a2b8;
+    }
+
+    .pet-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .pet-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        margin-right: 20px;
+    }
+
+    .stats-row {
+        display: flex;
+        gap: 20px;
+        margin-top: 15px;
+    }
+
+    .stat-item {
+        background: #f8f9fa;
+        padding: 10px 15px;
+        border-radius: 8px;
+        text-align: center;
+        flex: 1;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #17a2b8;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .action-bar {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .bulk-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .media-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .media-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+        position: relative;
+    }
+
+    .media-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .media-card.selected {
+        border: 3px solid #17a2b8;
+        transform: translateY(-3px);
+    }
+
+    .media-thumbnail {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        background: #f8f9fa;
+    }
+
+    .video-thumbnail {
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 3rem;
+        position: relative;
+    }
+
+    .video-thumbnail::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 0;
+        height: 0;
+        border-left: 20px solid white;
+        border-top: 15px solid transparent;
+        border-bottom: 15px solid transparent;
+        margin-left: 5px;
+    }
+
+    .media-info {
+        padding: 20px;
+    }
+
+    .media-info h6 {
+        margin: 0 0 10px 0;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .media-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .media-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .media-actions .btn {
+        font-size: 0.8rem;
+        padding: 5px 10px;
+    }
+
+    .visibility-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .visibility-visible {
+        background: rgba(40, 167, 69, 0.9);
+        color: white;
+    }
+
+    .visibility-hidden {
+        background: rgba(220, 53, 69, 0.9);
+        color: white;
+    }
+
+    .media-checkbox {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #666;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        color: #ddd;
+    }
+
+    .pagination {
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .status-indicator {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+
+    .status-boarding {
+        background: #28a745;
+    }
+
+    .status-completed {
+        background: #6c757d;
+    }
+
+    @media (max-width: 768px) {
+        .media-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .pet-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .pet-avatar {
+            margin: 0 0 15px 0;
+        }
+
+        .stats-row {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .action-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .bulk-actions {
+            justify-content: center;
+        }
+    }
+</style>
+
+<!-- Manage Header -->
+<div class="manage-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="display-6 mb-2">📷 Manage Pet Media</h1>
+                <p class="mb-0">Manage photos and videos for {{ booking.pet_name }}</p>
+            </div>
+            <div>
+                <a href="/media/admin/" class="btn btn-light btn-lg me-2">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+                {% if is_currently_boarding %}
+                <a href="/media/upload/{{ booking.id }}/" class="btn btn-success btn-lg">
+                    <i class="fas fa-plus me-2"></i>Upload More
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Display Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Pet Information Card -->
+    <div class="pet-info-card">
+        <div class="pet-header">
+            <div class="pet-avatar">
+                {% if booking.pet_type == 'dog' %}🐕
+                {% elif booking.pet_type == 'cat' %}🐱
+                {% elif booking.pet_type == 'bird' %}🐦
+                {% elif booking.pet_type == 'rabbit' %}🐰
+                {% else %}🐾{% endif %}
+            </div>
+            <div class="pet-details">
+                <h4>{{ booking.pet_name }} ({{ booking.get_pet_type_display }})</h4>
+                <p class="mb-2">
+                    <strong>Owner:</strong> {{ booking.owner_name }} ({{ booking.owner_email }})<br>
+                    <strong>Boarding Period:</strong> {{ booking.start_date|date:"M d" }} - {{ booking.end_date|date:"M d, Y" }}
+                    <span class="status-indicator {% if is_currently_boarding %}status-boarding{% else %}status-completed{% endif %}"></span>
+                    {% if is_currently_boarding %}Currently Boarding{% else %}Completed{% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="stat-number">{{ total_media }}</div>
+                <div class="stat-label">Total Media</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ total_views }}</div>
+                <div class="stat-label">Total Views</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ media_list.paginator.count }}</div>
+                <div class="stat-label">Visible to Owner</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <div class="d-flex align-items-center">
+            <h5 class="mb-0 me-3">Media Gallery</h5>
+            {% if total_media > 0 %}
+            <small class="text-muted">
+                Showing {{ media_list.start_index }}-{{ media_list.end_index }} of {{ media_list.paginator.count }} items
+            </small>
+            {% endif %}
+        </div>
+
+        {% if total_media > 0 %}
+        <div class="bulk-actions">
+            <button type="button" class="btn btn-outline-primary btn-sm" onclick="selectAll()">
+                <i class="fas fa-check-square me-1"></i>Select All
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearSelection()">
+                <i class="fas fa-square me-1"></i>Clear
+            </button>
+
+            <div class="dropdown">
+                <button class="btn btn-outline-danger btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-cog me-1"></i>Bulk Actions
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" onclick="bulkAction('hide')">
+                        <i class="fas fa-eye-slash me-2"></i>Hide Selected
+                    </a></li>
+                    <li><a class="dropdown-item" href="#" onclick="bulkAction('show')">
+                        <i class="fas fa-eye me-2"></i>Show Selected
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="#" onclick="bulkAction('delete')">
+                        <i class="fas fa-trash me-2"></i>Delete Selected
+                    </a></li>
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Media Grid -->
+    {% if media_list %}
+        <div class="media-grid">
+            {% for media in media_list %}
+            <div class="media-card" data-media-id="{{ media.id }}">
+                <input type="checkbox" class="media-checkbox" value="{{ media.id }}">
+
+                <span class="visibility-badge {% if media.is_visible %}visibility-visible{% else %}visibility-hidden{% endif %}">
+                    {% if media.is_visible %}Visible{% else %}Hidden{% endif %}
+                </span>
+
+                {% if media.is_photo %}
+                    <img src="{{ media.media_file.url }}" alt="{{ media.caption }}" class="media-thumbnail">
+                {% else %}
+                    <div class="media-thumbnail video-thumbnail">
+                        <i class="fas fa-video"></i>
+                    </div>
+                {% endif %}
+
+                <div class="media-info">
+                    <h6>{{ media.get_media_type_display }} • {{ media.file_size_mb }} MB</h6>
+
+                    <div class="media-meta">
+                        <span>{{ media.uploaded_at|timesince }} ago</span>
+                        <span>by {{ media.uploaded_by }}</span>
+                    </div>
+
+                    {% if media.caption %}
+                    <p class="mb-3"><small class="text-muted">"{{ media.caption }}"</small></p>
+                    {% endif %}
+
+                    <div class="media-actions">
+                        {% if media.is_photo %}
+                        <button class="btn btn-outline-primary btn-sm" onclick="viewMedia('{{ media.media_file.url }}', 'photo')">
+                            <i class="fas fa-eye me-1"></i>View
+                        </button>
+                        {% else %}
+                        <button class="btn btn-outline-primary btn-sm" onclick="viewMedia('{{ media.media_file.url }}', 'video')">
+                            <i class="fas fa-play me-1"></i>Play
+                        </button>
+                        {% endif %}
+
+                        <button class="btn btn-outline-secondary btn-sm" onclick="toggleVisibility({{ media.id }}, {{ media.is_visible|yesno:'false,true' }})">
+                            <i class="fas fa-{% if media.is_visible %}eye-slash{% else %}eye{% endif %} me-1"></i>
+                            {% if media.is_visible %}Hide{% else %}Show{% endif %}
+                        </button>
+
+                        <button class="btn btn-outline-danger btn-sm" onclick="deleteMedia({{ media.id }}, '{{ media.booking.pet_name }}')">
+                            <i class="fas fa-trash me-1"></i>Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if media_list.has_other_pages %}
+        <nav aria-label="Media pagination">
+            <ul class="pagination">
+                {% if media_list.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ media_list.previous_page_number }}">Previous</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">Page {{ media_list.number }} of {{ media_list.paginator.num_pages }}</span>
+                </li>
+
+                {% if media_list.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ media_list.next_page_number }}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ media_list.paginator.num_pages }}">Last</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-camera"></i>
+            <h4>No Media Uploaded Yet</h4>
+            <p class="text-muted mb-4">No photos or videos have been uploaded for {{ booking.pet_name }} yet.</p>
+            {% if is_currently_boarding %}
+            <a href="/media/upload/{{ booking.id }}/" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Upload First Media
+            </a>
+            {% else %}
+            <p class="text-muted">This pet's boarding has been completed.</p>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<!-- Media Viewer Modal -->
+<div class="modal fade" id="mediaModal" tabindex="-1" aria-labelledby="mediaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mediaModalLabel">Media Viewer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center" id="mediaModalBody">
+                <!-- Media content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Action Form -->
+<form id="bulkActionForm" method="POST" action="/media/bulk-actions/" style="display: none;">
+    {% csrf_token %}
+    <input type="hidden" name="action" id="bulkActionType">
+    <input type="hidden" name="booking_id" value="{{ booking.id }}">
+</form>
+
+<script>
+let selectedMedia = [];
+
+function selectAll() {
+    document.querySelectorAll('.media-checkbox').forEach(checkbox => {
+        checkbox.checked = true;
+        checkbox.closest('.media-card').classList.add('selected');
+    });
+    updateSelectedMedia();
+}
+
+function clearSelection() {
+    document.querySelectorAll('.media-checkbox').forEach(checkbox => {
+        checkbox.checked = false;
+        checkbox.closest('.media-card').classList.remove('selected');
+    });
+    selectedMedia = [];
+}
+
+function updateSelectedMedia() {
+    selectedMedia = Array.from(document.querySelectorAll('.media-checkbox:checked')).map(cb => cb.value);
+}
+
+function bulkAction(action) {
+    updateSelectedMedia();
+
+    if (selectedMedia.length === 0) {
+        alert('Please select at least one media item.');
+        return;
+    }
+
+    let confirmMessage = '';
+    switch(action) {
+        case 'delete':
+            confirmMessage = `Delete ${selectedMedia.length} selected media item(s)? This cannot be undone.`;
+            break;
+        case 'hide':
+            confirmMessage = `Hide ${selectedMedia.length} selected media item(s) from the pet owner?`;
+            break;
+        case 'show':
+            confirmMessage = `Make ${selectedMedia.length} selected media item(s) visible to the pet owner?`;
+            break;
+    }
+
+    if (confirm(confirmMessage)) {
+        document.getElementById('bulkActionType').value = action;
+
+        // Add selected media IDs to form
+        selectedMedia.forEach(mediaId => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'media_ids';
+            input.value = mediaId;
+            document.getElementById('bulkActionForm').appendChild(input);
+        });
+
+        document.getElementById('bulkActionForm').submit();
+    }
+}
+
+function viewMedia(url, type) {
+    const modalBody = document.getElementById('mediaModalBody');
+
+    if (type === 'photo') {
+        modalBody.innerHTML = `<img src="${url}" class="img-fluid" style="max-height: 70vh;" alt="Media">`;
+    } else {
+        modalBody.innerHTML = `
+            <video controls class="w-100" style="max-height: 70vh;">
+                <source src="${url}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        `;
+    }
+
+    const modal = new bootstrap.Modal(document.getElementById('mediaModal'));
+    modal.show();
+}
+
+function toggleVisibility(mediaId, newVisibility) {
+    fetch(`/media/toggle/${mediaId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({is_visible: newVisibility})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error updating visibility: ' + error.message);
+    });
+}
+
+function deleteMedia(mediaId, petName) {
+    if (confirm(`Delete this media for ${petName}? This cannot be undone.`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/media/delete/${mediaId}/`;
+
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = 'csrfmiddlewaretoken';
+        csrfToken.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        const bookingId = document.createElement('input');
+        bookingId.type = 'hidden';
+        bookingId.name = 'booking_id';
+        bookingId.value = '{{ booking.id }}';
+
+        form.appendChild(csrfToken);
+        form.appendChild(bookingId);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Handle checkbox changes
+document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('media-checkbox')) {
+        const card = e.target.closest('.media-card');
+        if (e.target.checked) {
+            card.classList.add('selected');
+        } else {
+            card.classList.remove('selected');
+        }
+        updateSelectedMedia();
+    }
+});
+</script>
+
+{% endblock %}

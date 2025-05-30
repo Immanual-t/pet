@@ -1,0 +1,493 @@
+<!-- File: templates/boarding/admin_dashboard.html -->
+
+{% extends 'base.html' %}
+{% load custom_filter %}
+
+{% block content %}
+<style>
+    .admin-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px 0;
+        margin-bottom: 30px;
+    }
+
+    .stats-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+        margin-bottom: 20px;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+
+    .stats-label {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .filter-section {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .booking-table {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .table thead th {
+        border: none;
+        font-weight: 600;
+        padding: 15px 10px;
+    }
+
+    .table tbody td {
+        padding: 15px 10px;
+        vertical-align: middle;
+    }
+
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-approved {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-rejected {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-completed {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .action-buttons .btn {
+        margin: 2px;
+        padding: 5px 10px;
+        font-size: 0.8rem;
+    }
+
+    .booking-details {
+        font-size: 0.9rem;
+    }
+
+    .pet-info {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .owner-info {
+        color: #666;
+        font-size: 0.85rem;
+    }
+
+    .price-info {
+        font-weight: 600;
+        color: #28a745;
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .detail-item {
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: #333;
+        display: inline-block;
+        width: 150px;
+    }
+
+    .pagination {
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    @media (max-width: 768px) {
+        .table-responsive {
+            font-size: 0.8rem;
+        }
+
+        .action-buttons .btn {
+            padding: 3px 6px;
+            font-size: 0.7rem;
+        }
+
+        .stats-number {
+            font-size: 2rem;
+        }
+    }
+</style>
+
+<!-- Admin Header -->
+<div class="admin-header">
+    <div class="container">
+        <h1 class="display-6 mb-0">Pet Boarding Admin Dashboard</h1>
+        <p class="mb-0">Manage all boarding bookings and reservations</p>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="stats-card">
+                <div class="stats-number">{{ stats.total_bookings }}</div>
+                <div class="stats-label">Total Bookings</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stats-card">
+                <div class="stats-number">{{ stats.pending_bookings }}</div>
+                <div class="stats-label">Pending Review</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stats-card">
+                <div class="stats-number">{{ stats.approved_bookings }}</div>
+                <div class="stats-label">Approved</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stats-card">
+                <div class="stats-number">{{ stats.completed_bookings }}</div>
+                <div class="stats-label">Completed</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-section">
+        <h5 class="mb-3">Filter Bookings</h5>
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label for="status" class="form-label">Status</label>
+                <select name="status" id="status" class="form-control">
+                    <option value="all" {% if current_status == 'all' %}selected{% endif %}>All Status</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="date" class="form-label">Check-in Date</label>
+                <input type="date" name="date" id="date" class="form-control" value="{{ current_date }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="?" class="btn btn-outline-secondary">Clear</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Bookings Table -->
+    <div class="booking-table">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Pet & Owner</th>
+                        <th>Dates</th>
+                        <th>Duration & Cost</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                    <tr>
+                        <td>
+                            <strong>#{{ booking.id }}</strong><br>
+                            <small class="text-muted">{{ booking.created_at|date:"M d, Y" }}</small>
+                        </td>
+                        <td>
+                            <div class="booking-details">
+                                <div class="pet-info">
+                                    🐾 {{ booking.pet_name }} ({{ booking.get_pet_type_display }})
+                                </div>
+                                <div class="owner-info">
+                                    👤 {{ booking.owner_name }}<br>
+                                    📞 {{ booking.owner_phone }}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="booking-details">
+                                <strong>Check-in:</strong><br>
+                                {{ booking.start_date|date:"M d, Y" }}<br>
+                                {{ booking.start_time|time:"g:i A" }}<br><br>
+                                <strong>Check-out:</strong><br>
+                                {{ booking.end_date|date:"M d, Y" }}<br>
+                                {{ booking.end_time|time:"g:i A" }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="booking-details">
+                                {% if booking.pricing_type == 'daily' %}
+                                    {{ booking.total_days }} day{{ booking.total_days|pluralize }}
+                                {% else %}
+                                    {{ booking.total_hours }} hour{{ booking.total_hours|pluralize }}
+                                {% endif %}
+                                <br>
+                                <span class="price-info">{{ booking.total_price|currency }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ booking.status }}">
+                                {{ booking.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-info" onclick="viewBooking({{ booking.id }})"
+                                        data-bs-toggle="modal" data-bs-target="#bookingModal">
+                                    View
+                                </button>
+                                {% if booking.status == 'pending' %}
+                                    <button class="btn btn-sm btn-success" onclick="updateStatus({{ booking.id }}, 'approved')">
+                                        Approve
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="updateStatus({{ booking.id }}, 'rejected')">
+                                        Reject
+                                    </button>
+                                {% elif booking.status == 'approved' %}
+                                    <button class="btn btn-sm btn-primary" onclick="updateStatus({{ booking.id }}, 'completed')">
+                                        Complete
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="fas fa-inbox fa-3x mb-3"></i>
+                                <p>No bookings found matching your criteria.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if bookings.has_other_pages %}
+    <nav aria-label="Booking pagination">
+        <ul class="pagination">
+            {% if bookings.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if current_status != 'all' %}&status={{ current_status }}{% endif %}{% if current_date %}&date={{ current_date }}{% endif %}">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ bookings.previous_page_number }}{% if current_status != 'all' %}&status={{ current_status }}{% endif %}{% if current_date %}&date={{ current_date }}{% endif %}">Previous</a>
+                </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">Page {{ bookings.number }} of {{ bookings.paginator.num_pages }}</span>
+            </li>
+
+            {% if bookings.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ bookings.next_page_number }}{% if current_status != 'all' %}&status={{ current_status }}{% endif %}{% if current_date %}&date={{ current_date }}{% endif %}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ bookings.paginator.num_pages }}{% if current_status != 'all' %}&status={{ current_status }}{% endif %}{% if current_date %}&date={{ current_date }}{% endif %}">Last</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- Booking Details Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bookingModalLabel">Booking Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="bookingDetails">
+                <!-- Content will be loaded via AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Update Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statusModalLabel">Update Booking Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" id="statusForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="hidden" name="status" id="newStatus">
+                    <div class="mb-3">
+                        <label for="adminNotes" class="form-label">Admin Notes (Optional)</label>
+                        <textarea name="admin_notes" id="adminNotes" class="form-control" rows="3"
+                                  placeholder="Add any notes about this status change..."></textarea>
+                    </div>
+                    <div class="alert alert-info">
+                        <small>This action will update the booking status and notify the customer via email.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="confirmStatusBtn">Confirm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Global booking data for modal display
+let allBookings = {{ bookings.object_list|safe }};
+
+function viewBooking(bookingId) {
+    // In a real implementation, you'd fetch booking details via AJAX
+    // For now, we'll use the data from the page
+    const booking = allBookings.find(b => b.id === bookingId);
+    if (!booking) {
+        document.getElementById('bookingDetails').innerHTML = '<p>Booking not found.</p>';
+        return;
+    }
+
+    // This is a simplified version - in reality you'd make an AJAX call
+    const detailsHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="text-primary">Pet Information</h6>
+                <div class="detail-item">
+                    <span class="detail-label">Pet Name:</span>
+                    <span>Booking #${bookingId}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Type:</span>
+                    <span>Details will be loaded</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-primary">Owner Information</h6>
+                <div class="detail-item">
+                    <span class="detail-label">Name:</span>
+                    <span>Details will be loaded</span>
+                </div>
+            </div>
+        </div>
+        <div class="mt-3">
+            <h6 class="text-primary">Special Instructions</h6>
+            <p class="text-muted">Details will be loaded via AJAX in production</p>
+        </div>
+    `;
+
+    document.getElementById('bookingDetails').innerHTML = detailsHTML;
+}
+
+function updateStatus(bookingId, newStatus) {
+    document.getElementById('newStatus').value = newStatus;
+    document.getElementById('statusForm').action = `/boarding/admin/update-status/${bookingId}/`;
+
+    const statusText = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+    document.getElementById('statusModalLabel').textContent = `${statusText} Booking #${bookingId}`;
+    document.getElementById('confirmStatusBtn').textContent = `Confirm ${statusText}`;
+
+    const modal = new bootstrap.Modal(document.getElementById('statusModal'));
+    modal.show();
+}
+
+// Auto-refresh functionality
+let autoRefreshInterval;
+
+function startAutoRefresh() {
+    autoRefreshInterval = setInterval(() => {
+        // In production, you'd refresh the data via AJAX
+        console.log('Auto-refreshing booking data...');
+    }, 30000); // Refresh every 30 seconds
+}
+
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+    }
+}
+
+// Start auto-refresh when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    startAutoRefresh();
+});
+
+// Stop auto-refresh when page is hidden
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        stopAutoRefresh();
+    } else {
+        startAutoRefresh();
+    }
+});
+</script>
+
+{% endblock %}

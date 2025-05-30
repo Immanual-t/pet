@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .carousel-item img {
+        width: 100%;
+        height: 60vh;
+        object-fit: cover;
+        transform: scale(0.95);
+        transition: transform 0.5s ease-in-out;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .carousel-item img:hover {
+        transform: scale(1);
+    }
+
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .card img {
+        height: 200px;
+        object-fit: cover;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .card:hover img {
+        transform: scale(1.05);
+    }
+
+    .card.text-center {
+        border-radius: 10px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    footer {
+        background-color: #343a40;
+        color: white;
+    }
+
+    .rating {
+        color: #ffc107;
+    }
+
+    h2, h4 {
+        font-weight: bold;
+    }
+
+    .feedback-text {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        transition: all 0.3s ease;
+    }
+
+    .feedback-text.expanded {
+        -webkit-line-clamp: unset;
+    }
+
+    .read-more-btn {
+        color: #007bff;
+        cursor: pointer;
+        font-weight: 500;
+    }
+</style>
+
+<!-- SLIDER -->
+<div id="petCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000" data-bs-pause="false">
+    <div class="carousel-inner">
+        {% for image in slider_images %}
+        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+            <img src="{{ image.image.url|default_if_none:'' }}" class="d-block w-100" alt="{{ image.title|default:'Slide' }}">
+        </div>
+        {% endfor %}
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#petCarousel" data-bs-slide="prev" aria-label="Previous Slide">
+        <span class="carousel-control-prev-icon"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#petCarousel" data-bs-slide="next" aria-label="Next Slide">
+        <span class="carousel-control-next-icon"></span>
+    </button>
+</div>
+
+<!-- ABOUT SECTION -->
+<section class="container my-5" data-aos="fade-up">
+    <div class="row">
+        <div class="col-md-6">
+            <img src="{% static 'images/store-image.jpg' %}" class="img-fluid rounded" alt="About Store">
+        </div>
+        <div class="col-md-6">
+            <h2>About Pet Paradise</h2>
+            <p>Welcome to Pet Paradise, your one-stop destination for all your pet needs...</p>
+            <h4>📍 Location:</h4>
+            <p>123 Pet Street, Hubli, Karnataka</p>
+            <h4>🎯 Mission & Values:</h4>
+            <ul>
+                <li>Care & Compassion</li>
+                <li>Health & Hygiene</li>
+                <li>Training with Love</li>
+            </ul>
+            <h4>💡 Why Choose Us?</h4>
+            <p>We treat your pets like family...</p>
+        </div>
+    </div>
+</section>
+
+<!-- SERVICES SECTION -->
+<section class="bg-light py-5">
+    <div class="container" data-aos="zoom-in">
+        <h2 class="text-center mb-4">Our Services</h2>
+        <div class="row g-4">
+            {% for service in services %}
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'1' }}00">
+                <a href="{{ service.href }}" class="text-decoration-none text-dark">
+                    <div class="card h-100">
+                        <img src="{% static service.image %}" class="card-img-top" alt="{{ service.name }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ service.name }}</h5>
+                            <p class="card-text">{{ service.description }}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- FEEDBACK SECTION -->
+<section class="container my-5" data-aos="fade-up">
+    <h2 class="text-center mb-4">Happy Customers</h2>
+    <div class="row g-4">
+        {% for customer in customers %}
+        <div class="col-md-4" data-aos="flip-left" data-aos-delay="{{ forloop.counter0|add:'1' }}00">
+            <div class="card text-center">
+                <img src="{{ customer.image.url|default_if_none:'' }}" class="card-img-top" alt="{{ customer.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ customer.name }}</h5>
+                    <p class="card-text feedback-text" id="feedback-{{ customer.id }}" data-id="{{ customer.id }}">“{{ customer.feedback }}”</p>
+                    <span class="read-more-btn" id="read-more-{{ customer.id }}" onclick="toggleFeedback('{{ customer.id }}')">Read more</span>
+                    <p class="rating mt-2">
+                        {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= customer.rating|default:0 %}
+                                <span>&#9733;</span>
+                            {% else %}
+                                <span class="text-muted">&#9733;</span>
+                            {% endif %}
+                        {% endfor %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center">No reviews yet.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4" data-aos="fade-right">
+                <h5>About Us</h5>
+                <p>Pet Paradise is dedicated to pet wellness and happiness...</p>
+            </div>
+            <div class="col-md-4" data-aos="fade-up">
+                <h5>Contact Us</h5>
+                <p>Email: support@petparadise.com</p>
+                <p>Phone: +91 9876543210</p>
+                <p>Address: 123 Pet Street, Hubli</p>
+            </div>
+            <div class="col-md-4" data-aos="fade-left">
+                <h5>Working Hours</h5>
+                <p>Mon - Sat: 9:00 AM - 8:00 PM</p>
+                <p>Sun: 10:00 AM - 5:00 PM</p>
+                <h5>Follow Us</h5>
+                <p>
+                    <a href="/" class="text-white me-2" aria-label="Twitter">🐦 Twitter</a>
+                    <a href="/" class="text-white me-2" aria-label="Instagram">📸 Instagram</a>
+                    <a href="/" class="text-white" aria-label="Facebook">👍 Facebook</a>
+                </p>
+            </div>
+        </div>
+        <div class="text-center mt-3">
+            &copy; 2025 Pet Paradise. All rights reserved.
+        </div>
+    </div>
+</footer>
+
+<!-- JavaScript for Read More -->
+<script>
+    function toggleFeedback(id) {
+        const text = document.getElementById(`feedback-${id}`);
+        const button = document.getElementById(`read-more-${id}`);
+        if (text && button) {
+            text.classList.toggle("expanded");
+            button.innerText = text.classList.contains("expanded") ? "Show less" : "Read more";
+        }
+    }
+
+    // Hide 'Read more' buttons for short feedback
+    window.addEventListener("DOMContentLoaded", () => {
+        const feedbacks = document.querySelectorAll(".feedback-text");
+        feedbacks.forEach((text) => {
+            const id = text.dataset.id;
+            const lineHeight = parseFloat(getComputedStyle(text).lineHeight);
+            const lines = text.scrollHeight / lineHeight;
+            const btn = document.getElementById(`read-more-${id}`);
+            if (lines <= 4 && btn) {
+                btn.style.display = "none";
+            }
+        });
+    });
+</script>
+{% endblock %}

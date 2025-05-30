@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% load cart %}
+{% load custom_filter %}
+
+<head>
+  <style>
+    /* Enhanced Filter Categories Section */
+    .filter-categories {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+
+    .filter-categories:hover {
+      transform: translateY(-5px);
+    }
+
+    .filter-item {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      display: block;
+      transition: all 0.3s ease;
+    }
+
+    /* Hover effect for filter items */
+    .filter-item:hover {
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      transform: scale(1.03);
+      box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+    }
+
+    /* Active filter item */
+    .filter-item.active {
+      background-color: #007bff;
+      color: white;
+    }
+
+    /* Optional Icons for Categories */
+    .filter-item i {
+      margin-right: 8px;
+    }
+
+    /* Product Cards */
+    .product-card {
+      height: 400px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.3s ease;
+    }
+
+    .product-card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-img {
+      object-fit: cover;
+      height: 250px;
+      border-radius: 6px 6px 0 0;
+    }
+
+    .card-body {
+      flex-grow: 1;
+      padding: 10px;
+      text-align: center;
+    }
+
+    /* Add to cart button */
+    .add-to-cart-btn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 10px;
+      text-align: center;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .add-to-cart-btn i {
+      margin-right: 8px;
+    }
+
+    .add-to-cart-btn:hover {
+      background-color: #0056b3;
+    }
+
+    /* Blue shadow for active product cards */
+    .product-card.category-active {
+      box-shadow: 0 8px 20px rgba(0, 123, 255, 0.3);
+      transform: scale(1.02);
+    }
+  </style>
+</head>
+
+<div class="container-fluid mt-5">
+  <div class="row">
+    <!-- Filter Categories -->
+    <div class="col-lg-3 col-md-4 col-12 mb-4">
+      <div class="filter-categories">
+        <a href="/" class="filter-item {% if not request.GET.category %}active{% endif %}">
+          <i class="fas fa-home"></i> All Products
+        </a>
+
+        {% for category in categories %}
+          <a href="/?category={{ category.id }}" class="filter-item {% if request.GET.category|default_if_none:'' == category.id|stringformat:'s' %}active{% endif %}">
+            <i class="fas fa-tags"></i> {{ category.name }}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Products Section -->
+    <div id="products" class="col-lg-9 col-md-8 col-12">
+      <div class="row">
+        {% for product in products %}
+          <div class="col-lg-4 col-md-6 col-12 mb-4">
+            <div class="card shadow-sm border-light rounded-lg product-card {% if request.GET.category %}category-active{% endif %}">
+              <img src="{{ product.image.url }}" class="card-img-top img-fluid product-img" alt="{{ product.name }}">
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title text-center">{{ product.name }}</h5>
+                <p class="card-text text-center text-muted"><b>{{ product.price|currency }}</b></p>
+              </div>
+              <div class="card-footer p-0">
+                {% if product|is_in_cart:request.session.cart %}
+                  <div class="row no-gutters align-items-center">
+                    <form action="/#{{ product.id }}" method="post" class="col-2">
+                      {% csrf_token %}
+                      <input type="hidden" name="product" value="{{ product.id }}">
+                      <input type="hidden" name="remove" value="True">
+                      <input type="submit" value="-" class="btn btn-sm btn-outline-danger w-100">
+                    </form>
+
+                    <div class="text-center col">
+                      {{ product|cart_quantity:request.session.cart }} in Cart
+                    </div>
+
+                    <form action="/#{{ product.id }}" method="post" class="col-2">
+                      {% csrf_token %}
+                      <input type="hidden" name="product" value="{{ product.id }}">
+                      <input type="submit" value="+" class="btn btn-sm btn-outline-primary w-100">
+                    </form>
+                  </div>
+                {% else %}
+                  <form action="/#{{ product.id }}" method="post" class="text-center">
+                    {% csrf_token %}
+                    <input type="hidden" name="product" value="{{ product.id }}">
+                    <button type="submit" class="add-to-cart-btn">
+                      <i class="fas fa-cart-plus"></i> Add To Cart
+                    </button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
