@@ -1,0 +1,784 @@
+<!-- File: templates/boarding/boarding.html -->
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 80px 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="rgba(255,255,255,0.1)"><polygon points="1000,100 1000,0 0,100"/></svg>');
+        background-size: cover;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .feature-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 2rem;
+        color: white;
+    }
+
+    .pricing-card {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 30px;
+        text-align: center;
+        margin: 20px 0;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .booking-form {
+        background: white;
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        margin-top: 50px;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 12px 15px;
+        font-size: 16px;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 15px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .price-display {
+        background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        margin: 20px 0;
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+
+    .availability-check {
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        margin: 20px 0;
+    }
+
+    .available {
+        color: #28a745;
+        font-weight: bold;
+    }
+
+    .not-available {
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .alert {
+        border-radius: 10px;
+        border: none;
+        padding: 15px 20px;
+    }
+
+    .auth-required-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 80px 0;
+        text-align: center;
+        border-radius: 15px;
+        margin: 50px 0;
+    }
+
+    .auth-card {
+        background: white;
+        color: #333;
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .auth-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 30px;
+        font-size: 2.5rem;
+        color: white;
+    }
+
+    .auth-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .btn-auth {
+        padding: 15px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-decoration: none;
+        transition: transform 0.3s ease;
+        display: inline-block;
+    }
+
+    .btn-auth:hover {
+        transform: translateY(-2px);
+        text-decoration: none;
+    }
+
+    .btn-login {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border: none;
+    }
+
+    .btn-signup {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        border: none;
+    }
+
+    .benefits-list {
+        text-align: left;
+        margin: 20px 0;
+    }
+
+    .benefits-list li {
+        margin: 10px 0;
+        padding-left: 10px;
+    }
+
+    @media (max-width: 768px) {
+        .hero-section {
+            padding: 50px 0;
+        }
+
+        .booking-form {
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .feature-card {
+            margin-bottom: 30px;
+        }
+
+        .auth-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn-auth {
+            width: 200px;
+            text-align: center;
+        }
+
+        .auth-card {
+            padding: 30px 20px;
+            margin: 20px;
+        }
+    }
+</style>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-content">
+        <div class="container">
+            <h1 class="display-4 mb-4" data-aos="fade-up">Premium Pet Boarding Services</h1>
+            <p class="lead mb-5" data-aos="fade-up" data-aos-delay="200">
+                Give your beloved pets the care they deserve while you're away. Our professional staff provides 24/7 care in a safe, loving environment.
+            </p>
+            <a href="{% if user_authenticated %}#booking-form{% else %}#auth-section{% endif %}" class="btn btn-light btn-lg" data-aos="fade-up" data-aos-delay="400">
+                {% if user_authenticated %}Book Now{% else %}Get Started{% endif %}
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5" style="background-color: #f8f9fa;">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="display-5 mb-3" data-aos="fade-up">Why Choose Our Boarding Service?</h2>
+                <p class="lead text-muted" data-aos="fade-up" data-aos-delay="200">We provide exceptional care for your furry family members</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        🏥
+                    </div>
+                    <h5>24/7 Professional Care</h5>
+                    <p class="text-muted">Trained veterinary staff on-site round the clock to ensure your pet's health and safety.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        🛡️
+                    </div>
+                    <h5>Safe Environment</h5>
+                    <p class="text-muted">Secure, climate-controlled facilities with separate areas for different pet types and sizes.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        🎾
+                    </div>
+                    <h5>Exercise & Playtime</h5>
+                    <p class="text-muted">Regular exercise sessions, interactive play, and socialization with other friendly pets.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        📱
+                    </div>
+                    <h5>Daily Updates</h5>
+                    <p class="text-muted">Regular photo and video updates so you can see how your pet is doing while you're away.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="display-5 mb-4" data-aos="fade-up">Transparent Pricing</h2>
+                <div class="row">
+                    <div class="col-md-6" data-aos="fade-up" data-aos-delay="200">
+                        <div class="pricing-card">
+                            <h4>Daily Boarding</h4>
+                            <div class="display-4 mb-3">₹500</div>
+                            <p>per day</p>
+                            <ul class="list-unstyled">
+                                <li>✓ 24/7 Care</li>
+                                <li>✓ 3 Meals</li>
+                                <li>✓ Exercise & Playtime</li>
+                                <li>✓ Daily Updates</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6" data-aos="fade-up" data-aos-delay="300">
+                        <div class="pricing-card">
+                            <h4>Hourly Care</h4>
+                            <div class="display-4 mb-3">₹100</div>
+                            <p>per hour</p>
+                            <ul class="list-unstyled">
+                                <li>✓ Professional Supervision</li>
+                                <li>✓ Feeding if needed</li>
+                                <li>✓ Short-term Care</li>
+                                <li>✓ Flexible Timing</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Authentication Required Section (shown when not logged in) -->
+{% if not user_authenticated %}
+<section class="py-5" id="auth-section">
+    <div class="container">
+        <div class="auth-required-section" data-aos="fade-up">
+            <div class="auth-card">
+                <div class="auth-icon">
+                    🔐
+                </div>
+                <h2 class="mb-4">Account Required for Booking</h2>
+                <p class="lead mb-4">
+                    To ensure the safety and security of your pet, we require all customers to create an account before making boarding reservations.
+                </p>
+
+                <div class="benefits-list">
+                    <h5 class="text-primary mb-3">Why Create an Account?</h5>
+                    <ul>
+                        <li>🐾 <strong>Track Your Bookings:</strong> View all past and upcoming reservations</li>
+                        <li>📧 <strong>Email Updates:</strong> Receive booking confirmations and status updates</li>
+                        <li>⚡ <strong>Faster Booking:</strong> Save your details for quick future bookings</li>
+                        <li>💬 <strong>Direct Communication:</strong> Easy contact with our care team</li>
+                        <li>📱 <strong>Mobile Access:</strong> Manage bookings on the go</li>
+                        <li>🔒 <strong>Secure Information:</strong> Your pet's details are safely stored</li>
+                    </ul>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Quick & Easy:</strong> Registration takes less than 2 minutes and is completely free!
+                </div>
+
+                <div class="auth-buttons">
+                    <a href="{{ login_url }}" class="btn-auth btn-login">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                    <a href="{{ signup_url }}" class="btn-auth btn-signup">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </a>
+                </div>
+
+                <div class="mt-4">
+                    <small class="text-muted">
+                        Already have an account? <a href="{{ login_url }}" class="text-primary">Click here to login</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Booking Form (only shown when logged in) -->
+{% if user_authenticated %}
+<section class="py-5" style="background-color: #f8f9fa;" id="booking-form">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+
+                <!-- Display Messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="booking-form" data-aos="fade-up">
+                    <h2 class="text-center mb-4">Book Your Pet's Stay</h2>
+
+                    <form method="POST" id="bookingForm">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <!-- Pet Information -->
+                            <div class="col-md-6">
+                                <h5 class="mb-3 text-primary">Pet Information</h5>
+
+                                <div class="form-group">
+                                    <label class="form-label">Pet Name *</label>
+                                    <input type="text" name="pet_name" class="form-control" required
+                                           value="{{ form_data.pet_name|default:'' }}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Pet Type *</label>
+                                    <select name="pet_type" class="form-control" required>
+                                        <option value="">Select Pet Type</option>
+                                        {% for value, label in pet_types %}
+                                            <option value="{{ value }}"
+                                                {% if form_data.pet_type == value %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Pet Age (months) *</label>
+                                    <input type="number" name="pet_age" class="form-control" min="1" required
+                                           value="{{ form_data.pet_age|default:'' }}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Pet Breed</label>
+                                    <input type="text" name="pet_breed" class="form-control"
+                                           value="{{ form_data.pet_breed|default:'' }}">
+                                </div>
+                            </div>
+
+                            <!-- Owner Information -->
+                            <div class="col-md-6">
+                                <h5 class="mb-3 text-primary">Owner Information</h5>
+
+                                <div class="form-group">
+                                    <label class="form-label">Owner Name *</label>
+                                    <input type="text" name="owner_name" class="form-control" required
+                                           value="{% if form_data.owner_name %}{{ form_data.owner_name }}{% else %}{{ customer.first_name }} {{ customer.last_name }}{% endif %}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Phone Number *</label>
+                                    <input type="tel" name="owner_phone" class="form-control" required
+                                           value="{{ form_data.owner_phone|default:customer.phone }}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Email Address *</label>
+                                    <input type="email" name="owner_email" class="form-control" required readonly
+                                           value="{{ customer.email }}" style="background-color: #f8f9fa;">
+                                    <small class="text-muted">This will be used to link the booking to your account</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Emergency Contact</label>
+                                    <input type="tel" name="emergency_contact" class="form-control"
+                                           value="{{ form_data.emergency_contact|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Booking Details -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5 class="mb-3 text-primary">Booking Details</h5>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="form-label">Start Date *</label>
+                                    <input type="date" name="start_date" id="startDate" class="form-control"
+                                           min="{{ today|date:'Y-m-d' }}" required
+                                           value="{{ form_data.start_date|default:'' }}">
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="form-label">Start Time *</label>
+                                    <input type="time" name="start_time" id="startTime" class="form-control" required
+                                           value="{{ form_data.start_time|default:'' }}">
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="form-label">End Date *</label>
+                                    <input type="date" name="end_date" id="endDate" class="form-control"
+                                           min="{{ today|date:'Y-m-d' }}" required
+                                           value="{{ form_data.end_date|default:'' }}">
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="form-label">End Time *</label>
+                                    <input type="time" name="end_time" id="endTime" class="form-control" required
+                                           value="{{ form_data.end_time|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pricing Type -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Pricing Type *</label>
+                                    <select name="pricing_type" id="pricingType" class="form-control" required>
+                                        <option value="">Select Pricing Type</option>
+                                        {% for value, label in pricing_types %}
+                                            <option value="{{ value }}"
+                                                {% if form_data.pricing_type == value %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <!-- Availability Check -->
+                                <div class="availability-check" id="availabilityStatus">
+                                    <div class="spinner-border text-primary d-none" id="availabilitySpinner" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mb-0" id="availabilityMessage">Select dates to check availability</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Price Display -->
+                        <div class="price-display d-none" id="priceDisplay">
+                            <div id="priceDetails"></div>
+                        </div>
+
+                        <!-- Additional Information -->
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">Special Instructions</label>
+                                    <textarea name="special_instructions" class="form-control" rows="4"
+                                              placeholder="Any special care instructions...">{{ form_data.special_instructions|default:'' }}</textarea>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">Medical Conditions</label>
+                                    <textarea name="medical_conditions" class="form-control" rows="4"
+                                              placeholder="Any medical conditions or medications...">{{ form_data.medical_conditions|default:'' }}</textarea>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">Feeding Instructions</label>
+                                    <textarea name="feeding_instructions" class="form-control" rows="4"
+                                              placeholder="Feeding schedule and preferences...">{{ form_data.feeding_instructions|default:'' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                                <i class="fas fa-paw me-2"></i>Book Pet Boarding
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Only initialize booking form if user is authenticated
+    {% if user_authenticated %}
+    const startDate = document.getElementById('startDate');
+    const endDate = document.getElementById('endDate');
+    const startTime = document.getElementById('startTime');
+    const endTime = document.getElementById('endTime');
+    const pricingType = document.getElementById('pricingType');
+    const availabilityStatus = document.getElementById('availabilityStatus');
+    const availabilitySpinner = document.getElementById('availabilitySpinner');
+    const availabilityMessage = document.getElementById('availabilityMessage');
+    const priceDisplay = document.getElementById('priceDisplay');
+    const priceDetails = document.getElementById('priceDetails');
+    const submitBtn = document.getElementById('submitBtn');
+
+    let availabilityCheckTimeout;
+    let priceCalculationTimeout;
+
+    // Function to check availability
+    function checkAvailability() {
+        if (!startDate.value || !endDate.value) {
+            availabilityMessage.textContent = 'Select dates to check availability';
+            availabilityMessage.className = 'mb-0';
+            submitBtn.disabled = true;
+            return;
+        }
+
+        availabilitySpinner.classList.remove('d-none');
+        availabilityMessage.textContent = 'Checking availability...';
+
+        fetch('/boarding/check-availability/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                start_date: startDate.value,
+                end_date: endDate.value
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            availabilitySpinner.classList.add('d-none');
+            if (data.available) {
+                availabilityMessage.textContent = '✅ Slots available for selected dates';
+                availabilityMessage.className = 'mb-0 available';
+                calculatePrice();
+            } else {
+                availabilityMessage.textContent = '❌ ' + data.message;
+                availabilityMessage.className = 'mb-0 not-available';
+                priceDisplay.classList.add('d-none');
+                submitBtn.disabled = true;
+            }
+        })
+        .catch(error => {
+            availabilitySpinner.classList.add('d-none');
+            availabilityMessage.textContent = '❌ Error checking availability';
+            availabilityMessage.className = 'mb-0 not-available';
+        });
+    }
+
+    // Function to calculate price
+    function calculatePrice() {
+        if (!startDate.value || !endDate.value || !startTime.value || !endTime.value || !pricingType.value) {
+            priceDisplay.classList.add('d-none');
+            submitBtn.disabled = true;
+            return;
+        }
+
+        fetch('/boarding/calculate-price/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                start_date: startDate.value,
+                start_time: startTime.value,
+                end_date: endDate.value,
+                end_time: endTime.value,
+                pricing_type: pricingType.value
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                priceDisplay.classList.add('d-none');
+                submitBtn.disabled = true;
+            } else {
+                let durationText = '';
+                if (data.pricing_type === 'daily') {
+                    durationText = `${data.total_days} day${data.total_days !== 1 ? 's' : ''}`;
+                } else {
+                    durationText = `${data.total_hours} hour${data.total_hours !== 1 ? 's' : ''}`;
+                }
+
+                priceDetails.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Duration:</strong> ${durationText}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Total Cost: ₹${data.total_price}</strong>
+                        </div>
+                    </div>
+                `;
+                priceDisplay.classList.remove('d-none');
+                submitBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            priceDisplay.classList.add('d-none');
+            submitBtn.disabled = true;
+        });
+    }
+
+    // Event listeners with debouncing
+    [startDate, endDate].forEach(element => {
+        element.addEventListener('change', function() {
+            clearTimeout(availabilityCheckTimeout);
+            availabilityCheckTimeout = setTimeout(checkAvailability, 500);
+        });
+    });
+
+    [startTime, endTime, pricingType].forEach(element => {
+        element.addEventListener('change', function() {
+            clearTimeout(priceCalculationTimeout);
+            priceCalculationTimeout = setTimeout(calculatePrice, 500);
+        });
+    });
+
+    // Ensure end date is not before start date
+    startDate.addEventListener('change', function() {
+        endDate.min = this.value;
+        if (endDate.value && endDate.value < this.value) {
+            endDate.value = this.value;
+        }
+    });
+
+    // Form validation
+    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+        if (submitBtn.disabled) {
+            e.preventDefault();
+            alert('Please ensure all required fields are filled and slots are available.');
+        }
+    });
+
+    // Initial check if form has values
+    if (startDate.value && endDate.value) {
+        checkAvailability();
+    }
+    {% endif %}
+});
+</script>
+
+{% endblock %}

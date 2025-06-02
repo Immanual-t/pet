@@ -1,0 +1,499 @@
+<!-- File: templates/boarding/booking_detail.html -->
+
+{% extends 'base.html' %}
+{% load custom_filter %}
+
+{% block content %}
+<style>
+    .detail-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 0;
+        margin-bottom: 30px;
+    }
+
+    .detail-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+
+    .pet-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #eee;
+    }
+
+    .pet-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 3rem;
+        margin-right: 20px;
+    }
+
+    .pet-info h2 {
+        margin: 0;
+        color: #333;
+    }
+
+    .pet-info p {
+        margin: 5px 0 0 0;
+        color: #666;
+    }
+
+    .status-badge {
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        display: inline-block;
+        margin-left: auto;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-approved {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-rejected {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-completed {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .status-cancelled {
+        background: #f5c6cb;
+        color: #721c24;
+    }
+
+    .detail-section {
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        color: #667eea;
+        font-weight: 600;
+        margin-bottom: 20px;
+        font-size: 1.2rem;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 10px;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f8f9fa;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: #666;
+        width: 40%;
+    }
+
+    .detail-value {
+        color: #333;
+        width: 60%;
+        text-align: right;
+    }
+
+    .price-highlight {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #28a745;
+    }
+
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(to bottom, #667eea, #764ba2);
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 25px;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -23px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #667eea;
+    }
+
+    .timeline-item.active::before {
+        background: #28a745;
+        box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.2);
+    }
+
+    .timeline-content {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        margin-left: 10px;
+    }
+
+    .timeline-date {
+        font-size: 0.9rem;
+        color: #666;
+        font-weight: 500;
+    }
+
+    .timeline-title {
+        font-weight: 600;
+        color: #333;
+        margin: 5px 0;
+    }
+
+    .emergency-contact {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        margin: 20px 0;
+    }
+
+    .contact-info {
+        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-top: 30px;
+    }
+
+    @media (max-width: 768px) {
+        .pet-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .pet-avatar {
+            margin: 0 0 20px 0;
+        }
+
+        .detail-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+
+        .detail-label,
+        .detail-value {
+            width: 100%;
+            text-align: left;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<!-- Detail Header -->
+<div class="detail-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="display-6 mb-2">Booking Details</h1>
+                <p class="mb-0">Booking #{{ booking.id }} • {{ booking.created_at|date:"M d, Y g:i A" }}</p>
+            </div>
+            <span class="status-badge status-{{ booking.status }}">
+                {{ booking.get_status_display }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <!-- Main Details -->
+        <div class="col-lg-8">
+            <!-- Pet Information -->
+            <div class="detail-card">
+                <div class="pet-header">
+                    <div class="pet-avatar">
+                        {% if booking.pet_type == 'dog' %}🐕
+                        {% elif booking.pet_type == 'cat' %}🐱
+                        {% elif booking.pet_type == 'bird' %}🐦
+                        {% elif booking.pet_type == 'rabbit' %}🐰
+                        {% else %}🐾{% endif %}
+                    </div>
+                    <div class="pet-info">
+                        <h2>{{ booking.pet_name }}</h2>
+                        <p>{{ booking.get_pet_type_display }}{% if booking.pet_breed %} • {{ booking.pet_breed }}{% endif %}</p>
+                        <p><strong>Age:</strong> {{ booking.pet_age }} months</p>
+                    </div>
+                </div>
+
+                <!-- Booking Details -->
+                <div class="detail-section">
+                    <h5 class="section-title">📅 Booking Information</h5>
+                    <div class="detail-row">
+                        <span class="detail-label">Check-in Date & Time:</span>
+                        <span class="detail-value">{{ booking.start_date|date:"l, M d, Y" }} at {{ booking.start_time|time:"g:i A" }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Check-out Date & Time:</span>
+                        <span class="detail-value">{{ booking.end_date|date:"l, M d, Y" }} at {{ booking.end_time|time:"g:i A" }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Duration:</span>
+                        <span class="detail-value">
+                            {% if booking.pricing_type == 'daily' %}
+                                {{ booking.total_days }} day{{ booking.total_days|pluralize }}
+                            {% else %}
+                                {{ booking.total_hours }} hour{{ booking.total_hours|pluralize }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Pricing Type:</span>
+                        <span class="detail-value">{{ booking.get_pricing_type_display }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Total Cost:</span>
+                        <span class="detail-value price-highlight">{{ booking.total_price|currency }}</span>
+                    </div>
+                </div>
+
+                <!-- Owner Information -->
+                <div class="detail-section">
+                    <h5 class="section-title">👤 Owner Information</h5>
+                    <div class="detail-row">
+                        <span class="detail-label">Owner Name:</span>
+                        <span class="detail-value">{{ booking.owner_name }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Phone Number:</span>
+                        <span class="detail-value">{{ booking.owner_phone }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Email Address:</span>
+                        <span class="detail-value">{{ booking.owner_email }}</span>
+                    </div>
+                    {% if booking.emergency_contact %}
+                    <div class="detail-row">
+                        <span class="detail-label">Emergency Contact:</span>
+                        <span class="detail-value">{{ booking.emergency_contact }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Care Instructions -->
+                {% if booking.special_instructions or booking.medical_conditions or booking.feeding_instructions %}
+                <div class="detail-section">
+                    <h5 class="section-title">🏥 Care Instructions</h5>
+
+                    {% if booking.special_instructions %}
+                    <div class="mb-3">
+                        <h6 class="text-primary">Special Instructions:</h6>
+                        <p class="bg-light p-3 rounded">{{ booking.special_instructions }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if booking.medical_conditions %}
+                    <div class="mb-3">
+                        <h6 class="text-danger">Medical Conditions:</h6>
+                        <p class="bg-light p-3 rounded">{{ booking.medical_conditions }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if booking.feeding_instructions %}
+                    <div class="mb-3">
+                        <h6 class="text-success">Feeding Instructions:</h6>
+                        <p class="bg-light p-3 rounded">{{ booking.feeding_instructions }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Admin Notes -->
+                {% if booking.admin_notes %}
+                <div class="detail-section">
+                    <h5 class="section-title">📝 Admin Notes</h5>
+                    <div class="bg-info text-white p-3 rounded">
+                        {{ booking.admin_notes|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="detail-card">
+                <h5 class="section-title">⚡ Quick Actions</h5>
+                <div class="action-buttons d-grid gap-2">
+                    <a href="/my-bookings/" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to My Bookings
+                    </a>
+
+                    {% if booking.status in 'pending,approved' and booking.start_date > today %}
+                    <button class="btn btn-outline-danger" onclick="cancelBooking({{ booking.id }})">
+                        <i class="fas fa-times me-2"></i>Cancel This Booking
+                    </button>
+                    {% endif %}
+
+                    <a href="/boarding/" class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>Make New Booking
+                    </a>
+
+                    <button class="btn btn-outline-secondary" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i>Print Details
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="contact-info">
+                <h6><i class="fas fa-phone me-2"></i>Need Help?</h6>
+                <p class="mb-2"><strong>Phone:</strong> +91 9876543210</p>
+                <p class="mb-2"><strong>Email:</strong> boarding@petparadise.com</p>
+                <p class="mb-0"><strong>Hours:</strong> 24/7 Support</p>
+            </div>
+
+            <!-- Emergency Contact -->
+            {% if booking.emergency_contact %}
+            <div class="emergency-contact">
+                <h6><i class="fas fa-exclamation-triangle me-2"></i>Emergency Contact</h6>
+                <p class="mb-0"><strong>{{ booking.emergency_contact }}</strong></p>
+                <small>Call in case of emergency</small>
+            </div>
+            {% endif %}
+
+            <!-- Booking Timeline -->
+            <div class="detail-card">
+                <h5 class="section-title">📊 Booking Timeline</h5>
+                <div class="timeline">
+                    <div class="timeline-item active">
+                        <div class="timeline-content">
+                            <div class="timeline-date">{{ booking.created_at|date:"M d, Y g:i A" }}</div>
+                            <div class="timeline-title">Booking Submitted</div>
+                        </div>
+                    </div>
+
+                    {% if booking.status != 'pending' %}
+                    <div class="timeline-item {% if booking.status in 'approved,completed' %}active{% endif %}">
+                        <div class="timeline-content">
+                            <div class="timeline-date">{{ booking.updated_at|date:"M d, Y g:i A" }}</div>
+                            <div class="timeline-title">
+                                {% if booking.status == 'approved' %}Booking Approved
+                                {% elif booking.status == 'rejected' %}Booking Rejected
+                                {% elif booking.status == 'cancelled' %}Booking Cancelled
+                                {% elif booking.status == 'completed' %}Booking Completed
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if booking.status == 'approved' and booking.start_date >= today %}
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-date">{{ booking.start_date|date:"M d, Y" }} {{ booking.start_time|time:"g:i A" }}</div>
+                            <div class="timeline-title">Check-in Scheduled</div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if booking.status == 'approved' %}
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-date">{{ booking.end_date|date:"M d, Y" }} {{ booking.end_time|time:"g:i A" }}</div>
+                            <div class="timeline-title">Check-out Scheduled</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Booking Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelModalLabel">Cancel Booking #{{ booking.id }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to cancel the booking for <strong>{{ booking.pet_name }}</strong>?</p>
+                <div class="alert alert-warning">
+                    <strong>Booking Details:</strong><br>
+                    Check-in: {{ booking.start_date|date:"M d, Y" }} at {{ booking.start_time|time:"g:i A" }}<br>
+                    Check-out: {{ booking.end_date|date:"M d, Y" }} at {{ booking.end_time|time:"g:i A" }}<br>
+                    Total Cost: {{ booking.total_price|currency }}
+                </div>
+                <div class="alert alert-danger">
+                    <small><strong>Note:</strong> Cancelled bookings cannot be recovered. You'll need to make a new booking if you change your mind.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Booking</button>
+                <form method="POST" action="/my-bookings/{{ booking.id }}/cancel/" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Yes, Cancel Booking</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function cancelBooking(bookingId) {
+    const modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+    modal.show();
+}
+</script>
+
+{% endblock %}

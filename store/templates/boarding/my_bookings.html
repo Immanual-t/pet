@@ -1,0 +1,623 @@
+<!-- File: templates/boarding/my_bookings.html -->
+
+{% extends 'base.html' %}
+{% load custom_filter %}
+
+{% block content %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 0;
+        margin-bottom: 30px;
+    }
+
+    .stats-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+        margin-bottom: 20px;
+        border-left: 4px solid #667eea;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stats-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+
+    .stats-label {
+        color: #666;
+        font-weight: 500;
+        margin-top: 5px;
+    }
+
+    .booking-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+
+    .booking-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .booking-pending {
+        border-left-color: #ffc107;
+    }
+
+    .booking-approved {
+        border-left-color: #28a745;
+    }
+
+    .booking-completed {
+        border-left-color: #6c757d;
+    }
+
+    .booking-cancelled {
+        border-left-color: #dc3545;
+    }
+
+    .booking-rejected {
+        border-left-color: #fd7e14;
+    }
+
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-approved {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-rejected {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-completed {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .status-cancelled {
+        background: #f5c6cb;
+        color: #721c24;
+    }
+
+    .pet-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .pet-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        margin-right: 15px;
+    }
+
+    .pet-details h6 {
+        margin: 0;
+        color: #333;
+        font-weight: 600;
+    }
+
+    .pet-details small {
+        color: #666;
+    }
+
+    .booking-dates {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+        margin: 15px 0;
+    }
+
+    .date-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .date-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .date-label {
+        font-weight: 600;
+        color: #666;
+    }
+
+    .date-value {
+        color: #333;
+    }
+
+    .price-info {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #28a745;
+        text-align: center;
+        margin: 15px 0;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-sm {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+    }
+
+    .filter-section {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #666;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        color: #ddd;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #eee;
+    }
+
+    .section-title {
+        color: #333;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .time-status {
+        font-size: 0.9rem;
+        color: #666;
+        font-style: italic;
+        margin-top: 5px;
+    }
+
+    .booking-current {
+        border-left-color: #007bff;
+        background: linear-gradient(135deg, #f8fff9 0%, #e8f4f8 100%);
+    }
+
+    .booking-overdue {
+        border-left-color: #dc3545;
+        background: linear-gradient(135deg, #fff8f8 0%, #ffe8e8 100%);
+    }
+
+    @media (max-width: 768px) {
+        .stats-number {
+            font-size: 1.5rem;
+        }
+
+        .pet-info {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .pet-avatar {
+            margin: 0 0 10px 0;
+        }
+
+        .action-buttons {
+            justify-content: center;
+        }
+
+        .date-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+    }
+</style>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <h1 class="display-6 mb-2">My Pet Boarding</h1>
+        <p class="mb-0">Manage your pet boarding reservations and history</p>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-2 col-md-4 col-6">
+            <div class="stats-card">
+                <div class="stats-number">{{ stats.total_bookings }}</div>
+                <div class="stats-label">Total Bookings</div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-6">
+            <div class="stats-card">
+                <div class="stats-number">{{ stats.upcoming_bookings }}</div>
+                <div class="stats-label">Upcoming</div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-6">
+            <div class="stats-card">
+                <div class="stats-number">{{ stats.current_bookings }}</div>
+                <div class="stats-label">Current</div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-6">
+            <div class="stats-card">
+                <div class="stats-number">{{ stats.past_bookings }}</div>
+                <div class="stats-label">Completed</div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-6">
+            <div class="stats-card">
+                <div class="stats-number">{{ stats.pending_bookings }}</div>
+                <div class="stats-label">Pending</div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-6">
+            <div class="stats-card">
+                <a href="/boarding/" class="text-decoration-none">
+                    <div class="stats-number">+</div>
+                    <div class="stats-label">New Booking</div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Display Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Current Bookings -->
+    {% if current_bookings %}
+    <section class="mb-5">
+        <div class="section-header">
+            <h4 class="section-title">🏠 Currently Boarding</h4>
+        </div>
+        {% for booking in current_bookings %}
+        <div class="booking-card booking-current" data-aos="fade-up">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="pet-info">
+                        <div class="pet-avatar">
+                            {% if booking.pet_type == 'dog' %}🐕
+                            {% elif booking.pet_type == 'cat' %}🐱
+                            {% elif booking.pet_type == 'bird' %}🐦
+                            {% elif booking.pet_type == 'rabbit' %}🐰
+                            {% else %}🐾{% endif %}
+                        </div>
+                        <div class="pet-details">
+                            <h6>{{ booking.pet_name }} ({{ booking.get_pet_type_display }})</h6>
+                            <small>Booking #{{ booking.id }} • {{ booking.created_at|date:"M d, Y" }}</small>
+                        </div>
+                    </div>
+
+                    <div class="booking-dates">
+                        <div class="date-item">
+                            <span class="date-label">Check-in:</span>
+                            <span class="date-value">{{ booking.start_date|date:"M d, Y" }} at {{ booking.start_time|time:"g:i A" }}</span>
+                        </div>
+                        <div class="date-item">
+                            <span class="date-label">Check-out:</span>
+                            <span class="date-value">{{ booking.end_date|date:"M d, Y" }} at {{ booking.end_time|time:"g:i A" }}</span>
+                        </div>
+                        <div class="date-item">
+                            <span class="date-label">Duration:</span>
+                            <span class="date-value">
+                                {% if booking.pricing_type == 'daily' %}
+                                    {{ booking.total_days }} day{{ booking.total_days|pluralize }}
+                                {% else %}
+                                    {{ booking.total_hours }} hour{{ booking.total_hours|pluralize }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 text-lg-end">
+                    <span class="status-badge status-approved">{{ booking.get_display_status }}</span>
+                    <div class="price-info">{{ booking.total_price|currency }}</div>
+                    {% if booking.get_time_status %}
+                    <div class="time-status">
+                        <small class="text-primary"><strong>{{ booking.get_time_status }}</strong></small>
+                    </div>
+                    {% endif %}
+                    <div class="action-buttons">
+                        <a href="/my-bookings/{{ booking.id }}/" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye me-1"></i>View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    <!-- Upcoming Bookings -->
+    {% if upcoming_bookings %}
+    <section class="mb-5">
+        <div class="section-header">
+            <h4 class="section-title">📅 Upcoming Bookings</h4>
+            {% if upcoming_bookings.count > 5 %}
+                <a href="?status=pending,approved" class="btn btn-outline-primary btn-sm">View All</a>
+            {% endif %}
+        </div>
+        {% for booking in upcoming_bookings %}
+        <div class="booking-card booking-{{ booking.status }}" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'1' }}00">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="pet-info">
+                        <div class="pet-avatar">
+                            {% if booking.pet_type == 'dog' %}🐕
+                            {% elif booking.pet_type == 'cat' %}🐱
+                            {% elif booking.pet_type == 'bird' %}🐦
+                            {% elif booking.pet_type == 'rabbit' %}🐰
+                            {% else %}🐾{% endif %}
+                        </div>
+                        <div class="pet-details">
+                            <h6>{{ booking.pet_name }} ({{ booking.get_pet_type_display }})</h6>
+                            <small>Booking #{{ booking.id }} • {{ booking.created_at|date:"M d, Y" }}</small>
+                        </div>
+                    </div>
+
+                    <div class="booking-dates">
+                        <div class="date-item">
+                            <span class="date-label">Check-in:</span>
+                            <span class="date-value">{{ booking.start_date|date:"M d, Y" }} at {{ booking.start_time|time:"g:i A" }}</span>
+                        </div>
+                        <div class="date-item">
+                            <span class="date-label">Check-out:</span>
+                            <span class="date-value">{{ booking.end_date|date:"M d, Y" }} at {{ booking.end_time|time:"g:i A" }}</span>
+                        </div>
+                        <div class="date-item">
+                            <span class="date-label">Duration:</span>
+                            <span class="date-value">
+                                {% if booking.pricing_type == 'daily' %}
+                                    {{ booking.total_days }} day{{ booking.total_days|pluralize }}
+                                {% else %}
+                                    {{ booking.total_hours }} hour{{ booking.total_hours|pluralize }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 text-lg-end">
+                    <span class="status-badge status-{{ booking.status }}">{{ booking.get_display_status }}</span>
+                    <div class="price-info">{{ booking.total_price|currency }}</div>
+                    {% if booking.get_time_status %}
+                    <div class="time-status">
+                        <small class="text-info"><strong>{{ booking.get_time_status }}</strong></small>
+                    </div>
+                    {% endif %}
+                    <div class="action-buttons">
+                        <a href="/my-bookings/{{ booking.id }}/" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye me-1"></i>View Details
+                        </a>
+                        {% if booking.status in 'pending,approved' and booking.start_date > today %}
+                        <button class="btn btn-outline-danger btn-sm" onclick="cancelBooking({{ booking.id }})">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <h5 class="mb-3">Filter Bookings</h5>
+        <form method="GET" class="row g-3">
+            <div class="col-md-6">
+                <label for="status" class="form-label">Status</label>
+                <select name="status" id="status" class="form-control">
+                    <option value="all" {% if current_status == 'all' %}selected{% endif %}>All Status</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="/my-bookings/" class="btn btn-outline-secondary">Clear</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- All Bookings -->
+    <section>
+        <div class="section-header">
+            <h4 class="section-title">📋 All Bookings</h4>
+        </div>
+
+        {% if bookings %}
+            {% for booking in bookings %}
+            <div class="booking-card booking-{{ booking.status }}" data-aos="fade-up">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="pet-info">
+                            <div class="pet-avatar">
+                                {% if booking.pet_type == 'dog' %}🐕
+                                {% elif booking.pet_type == 'cat' %}🐱
+                                {% elif booking.pet_type == 'bird' %}🐦
+                                {% elif booking.pet_type == 'rabbit' %}🐰
+                                {% else %}🐾{% endif %}
+                            </div>
+                            <div class="pet-details">
+                                <h6>{{ booking.pet_name }} ({{ booking.get_pet_type_display }})</h6>
+                                <small>Booking #{{ booking.id }} • {{ booking.created_at|date:"M d, Y" }}</small>
+                            </div>
+                        </div>
+
+                        <div class="booking-dates">
+                            <div class="date-item">
+                                <span class="date-label">Check-in:</span>
+                                <span class="date-value">{{ booking.start_date|date:"M d, Y" }} at {{ booking.start_time|time:"g:i A" }}</span>
+                            </div>
+                            <div class="date-item">
+                                <span class="date-label">Check-out:</span>
+                                <span class="date-value">{{ booking.end_date|date:"M d, Y" }} at {{ booking.end_time|time:"g:i A" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 text-lg-end">
+                        <span class="status-badge status-{{ booking.status }}">{{ booking.get_display_status }}</span>
+                        <div class="price-info">{{ booking.total_price|currency }}</div>
+                        {% if booking.get_time_status %}
+                        <div class="time-status">
+                            <small class="text-muted">{{ booking.get_time_status }}</small>
+                        </div>
+                        {% endif %}
+                        <div class="action-buttons">
+                            <a href="/my-bookings/{{ booking.id }}/" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye me-1"></i>View Details
+                            </a>
+                            {% if booking.status in 'pending,approved' and booking.start_date > today %}
+                            <button class="btn btn-outline-danger btn-sm" onclick="cancelBooking({{ booking.id }})">
+                                <i class="fas fa-times me-1"></i>Cancel
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-calendar-times"></i>
+                <h4>No Bookings Found</h4>
+                <p class="text-muted mb-4">You don't have any bookings yet. Start by making your first reservation!</p>
+                <a href="/boarding/" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Make a Booking
+                </a>
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- Pagination -->
+    {% if bookings.has_other_pages %}
+    <nav aria-label="Booking pagination">
+        <ul class="pagination justify-content-center mt-4">
+            {% if bookings.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if current_status != 'all' %}&status={{ current_status }}{% endif %}">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ bookings.previous_page_number }}{% if current_status != 'all' %}&status={{ current_status }}{% endif %}">Previous</a>
+                </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">Page {{ bookings.number }} of {{ bookings.paginator.num_pages }}</span>
+            </li>
+
+            {% if bookings.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ bookings.next_page_number }}{% if current_status != 'all' %}&status={{ current_status }}{% endif %}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ bookings.paginator.num_pages }}{% if current_status != 'all' %}&status={{ current_status }}{% endif %}">Last</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- Cancel Booking Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelModalLabel">Cancel Booking</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to cancel this booking?</p>
+                <div class="alert alert-warning">
+                    <small><strong>Note:</strong> Cancelled bookings cannot be recovered. You'll need to make a new booking if you change your mind.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Booking</button>
+                <form method="POST" id="cancelForm" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Yes, Cancel Booking</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function cancelBooking(bookingId) {
+    document.getElementById('cancelForm').action = `/my-bookings/${bookingId}/cancel/`;
+    const modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+    modal.show();
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,1016 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% load cart %}
+{% load custom_filter %}
+
+<style>
+/* Enhanced Orders Page Styling */
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --success-gradient: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    --warning-gradient: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    --shadow-soft: 0 10px 30px rgba(0,0,0,0.1);
+    --shadow-hover: 0 20px 60px rgba(0,0,0,0.15);
+    --border-radius: 20px;
+    --transition-smooth: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+/* Page Header */
+.orders-header {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 60px 0 40px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 40px;
+}
+
+.orders-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="rgba(255,255,255,0.1)"><polygon points="1000,100 1000,0 0,100"/></svg>');
+    background-size: cover;
+}
+
+.header-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+}
+
+.orders-title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.orders-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* Stats Cards */
+.stats-section {
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 25px;
+    text-align: center;
+    box-shadow: var(--shadow-soft);
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #f0f0f0;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-gradient);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    font-size: 1.5rem;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    color: #666;
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Orders Container */
+.orders-container {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 40px;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.orders-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--success-gradient);
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.section-title::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(to right, #667eea, transparent);
+}
+
+/* Order Item */
+.order-item {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    transition: var(--transition-smooth);
+    border: 1px solid #e9ecef;
+    position: relative;
+    overflow: hidden;
+}
+
+.order-item:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-soft);
+    border-color: transparent;
+}
+
+.order-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--secondary-gradient);
+    transform: scaleX(0);
+    transition: var(--transition-smooth);
+}
+
+.order-item:hover::before {
+    transform: scaleX(1);
+}
+
+.order-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.order-number {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.order-date {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.order-status {
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-processing {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.order-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.order-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: var(--transition-smooth);
+}
+
+.order-item:hover .order-image {
+    transform: scale(1.05);
+}
+
+.order-details {
+    flex: 1;
+}
+
+.product-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.order-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 10px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.info-icon {
+    color: #667eea;
+    width: 16px;
+}
+
+.order-pricing {
+    text-align: right;
+    min-width: 120px;
+}
+
+.unit-price {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.total-price {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #28a745;
+}
+
+.price-currency {
+    font-size: 1rem;
+    color: #667eea;
+}
+
+/* Order Actions */
+.order-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.action-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-track {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.btn-reorder {
+    background: var(--success-gradient);
+    color: white;
+}
+
+.btn-review {
+    background: var(--warning-gradient);
+    color: white;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    color: white;
+    text-decoration: none;
+}
+
+/* Empty State */
+.empty-orders {
+    text-align: center;
+    padding: 80px 20px;
+    color: #666;
+}
+
+.empty-orders i {
+    font-size: 5rem;
+    color: #ddd;
+    margin-bottom: 30px;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.empty-orders h3 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.empty-orders p {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.shop-now-btn {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: var(--transition-smooth);
+}
+
+.shop-now-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+/* Filter Tabs */
+.filter-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.filter-tab {
+    padding: 10px 20px;
+    border: 2px solid #e9ecef;
+    background: white;
+    color: #666;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+    font-size: 0.9rem;
+}
+
+.filter-tab.active,
+.filter-tab:hover {
+    background: var(--primary-gradient);
+    color: white;
+    border-color: transparent;
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+/* Order Summary */
+.order-summary-card {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e9f4ff 100%);
+    border-radius: var(--border-radius);
+    padding: 25px;
+    margin-top: 30px;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.summary-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    text-align: center;
+}
+
+.summary-stat {
+    padding: 15px;
+    background: white;
+    border-radius: 10px;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.summary-stat-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #667eea;
+    margin-bottom: 5px;
+}
+
+.summary-stat-label {
+    font-size: 0.8rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .orders-title {
+        font-size: 2.2rem;
+    }
+
+    .orders-container {
+        padding: 20px;
+    }
+
+    .order-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .order-details {
+        text-align: center;
+    }
+
+    .order-pricing {
+        text-align: center;
+        min-width: auto;
+    }
+
+    .order-actions {
+        justify-content: center;
+    }
+
+    .order-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .order-info {
+        justify-content: center;
+    }
+
+    .filter-tabs {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .filter-tab {
+        width: 200px;
+        text-align: center;
+    }
+}
+
+/* Loading Animation */
+.loading-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+</style>
+
+<!-- Orders Header -->
+<section class="orders-header">
+    <div class="container">
+        <div class="header-content">
+            <h1 class="orders-title">📦 My Orders</h1>
+            <p class="orders-subtitle">Track and manage your purchase history</p>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    {% if orders %}
+    <!-- Order Statistics -->
+    <div class="stats-section">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                    <div class="stat-number">{{ orders|length }}</div>
+                    <div class="stat-label">Total Orders</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-number">
+                        {% with completed=0 %}
+                            {% for order in orders %}
+                                {% if order.status %}
+                                    {% with completed=completed|add:1 %}{% endwith %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ completed }}
+                        {% endwith %}
+                    </div>
+                    <div class="stat-label">Completed</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-number">
+                        {% with pending=0 %}
+                            {% for order in orders %}
+                                {% if not order.status %}
+                                    {% with pending=pending|add:1 %}{% endwith %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ pending }}
+                        {% endwith %}
+                    </div>
+                    <div class="stat-label">Pending</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                    <div class="stat-number">
+                        {% with total_spent=0 %}
+                            {% for order in orders %}
+                                {% with item_total=order.quantity|multiply:order.price %}
+                                    {% with total_spent=total_spent|add:item_total %}{% endwith %}
+                                {% endwith %}
+                            {% endfor %}
+                            {{ total_spent|currency }}
+                        {% endwith %}
+                    </div>
+                    <div class="stat-label">Total Spent</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs">
+        <a href="?filter=all" class="filter-tab active">
+            <i class="fas fa-list me-2"></i>All Orders
+        </a>
+        <a href="?filter=completed" class="filter-tab">
+            <i class="fas fa-check me-2"></i>Completed
+        </a>
+        <a href="?filter=pending" class="filter-tab">
+            <i class="fas fa-clock me-2"></i>Pending
+        </a>
+    </div>
+
+    <!-- Orders List -->
+    <div class="orders-container">
+        <h4 class="section-title">
+            <i class="fas fa-box"></i>
+            Order History
+        </h4>
+
+        {% for order in orders %}
+        <div class="order-item" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'1' }}00">
+            <div class="order-header">
+                <div>
+                    <div class="order-number">Order #{{ forloop.counter|stringformat:"04d" }}</div>
+                    <div class="order-date">
+                        <i class="fas fa-calendar info-icon me-1"></i>
+                        {{ order.date|date:"F d, Y" }}
+                    </div>
+                </div>
+                <div class="order-status {% if order.status %}status-completed{% else %}status-pending{% endif %}">
+                    {% if order.status %}
+                        <i class="fas fa-check me-1"></i>Completed
+                    {% else %}
+                        <i class="fas fa-clock me-1"></i>Pending
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="order-content">
+                <img src="{{ order.product.image.url }}"
+                     class="order-image"
+                     alt="{{ order.product.name }}"
+                     onerror="this.src='/static/images/product-placeholder.jpg';">
+
+                <div class="order-details">
+                    <h5 class="product-name">{{ order.product.name }}</h5>
+
+                    <div class="order-info">
+                        <div class="info-item">
+                            <i class="fas fa-tag info-icon"></i>
+                            <span>{{ order.product.category.name }}</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-cubes info-icon"></i>
+                            <span>Qty: {{ order.quantity }}</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-rupee-sign info-icon"></i>
+                            <span>Unit Price: {{ order.price|currency }}</span>
+                        </div>
+                        {% if order.address %}
+                        <div class="info-item">
+                            <i class="fas fa-map-marker-alt info-icon"></i>
+                            <span>{{ order.address|truncatewords:5 }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="order-pricing">
+                    <div class="unit-price">{{ order.quantity }} × {{ order.price|currency }}</div>
+                    <div class="total-price">
+                        <span class="price-currency">₹</span>{{ order.quantity|multiply:order.price }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="order-actions">
+                {% if order.status %}
+                    <a href="#" class="action-btn btn-review" onclick="showReviewModal('{{ order.product.name }}')">
+                        <i class="fas fa-star"></i>
+                        Review
+                    </a>
+                    <a href="/" class="action-btn btn-reorder">
+                        <i class="fas fa-redo"></i>
+                        Reorder
+                    </a>
+                {% else %}
+                    <a href="#" class="action-btn btn-track" onclick="showTrackingModal('{{ forloop.counter|stringformat:"04d" }}')">
+                        <i class="fas fa-truck"></i>
+                        Track Order
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Order Summary -->
+        <div class="order-summary-card">
+            <h5 class="summary-title">Order Summary</h5>
+            <div class="summary-stats">
+                <div class="summary-stat">
+                    <div class="summary-stat-value">{{ orders|length }}</div>
+                    <div class="summary-stat-label">Total Orders</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="summary-stat-value">
+                        {% with total_items=0 %}
+                            {% for order in orders %}
+                                {% with total_items=total_items|add:order.quantity %}{% endwith %}
+                            {% endfor %}
+                            {{ total_items }}
+                        {% endwith %}
+                    </div>
+                    <div class="summary-stat-label">Total Items</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="summary-stat-value">
+                        {% with total_spent=0 %}
+                            {% for order in orders %}
+                                {% with item_total=order.quantity|multiply:order.price %}
+                                    {% with total_spent=total_spent|add:item_total %}{% endwith %}
+                                {% endwith %}
+                            {% endfor %}
+                            ₹{{ total_spent }}
+                        {% endwith %}
+                    </div>
+                    <div class="summary-stat-label">Total Spent</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="summary-stat-value">Free</div>
+                    <div class="summary-stat-label">Shipping</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="orders-container">
+        <div class="empty-orders">
+            <i class="fas fa-box-open"></i>
+            <h3>No orders yet</h3>
+            <p>You haven't placed any orders yet. Start shopping to see your order history here.</p>
+            <a href="/" class="shop-now-btn">
+                <i class="fas fa-shopping-bag me-2"></i>
+                Start Shopping
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Tracking Modal -->
+<div class="modal fade" id="trackingModal" tabindex="-1" aria-labelledby="trackingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="trackingModalLabel">
+                    <i class="fas fa-truck me-2"></i>
+                    Track Your Order
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="tracking-info">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Your order is being processed and will be shipped soon.
+                    </div>
+
+                    <div class="tracking-timeline">
+                        <div class="timeline-item completed">
+                            <div class="timeline-icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Order Placed</h6>
+                                <p>Your order has been successfully placed</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item active">
+                            <div class="timeline-icon">
+                                <i class="fas fa-cog fa-spin"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Processing</h6>
+                                <p>We're preparing your order for shipment</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Shipped</h6>
+                                <p>Your order is on its way</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Delivered</h6>
+                                <p>Order delivered successfully</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reviewModalLabel">
+                    <i class="fas fa-star me-2"></i>
+                    Write a Review
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <div class="rating-stars">
+                            <i class="fas fa-star" data-rating="1"></i>
+                            <i class="fas fa-star" data-rating="2"></i>
+                            <i class="fas fa-star" data-rating="3"></i>
+                            <i class="fas fa-star" data-rating="4"></i>
+                            <i class="fas fa-star" data-rating="5"></i>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reviewText" class="form-label">Your Review</label>
+                        <textarea class="form-control" id="reviewText" rows="4" placeholder="Share your experience with this product..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>
+                        Submit Review
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize AOS if available
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 600,
+            once: true,
+            offset: 50
+        });
+    }
+
+    // Add animation to order items
+    const orderItems = document.querySelectorAll('.order-item');
+    orderItems.forEach((item, index) => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(30px)';
+
+        setTimeout(() => {
+            item.style.transition = 'all 0.6s ease';
+            item.style.opacity = '1';
+            item.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+
+    // Rating stars functionality
+    const stars = document.querySelectorAll('.rating-stars .fas');
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            const rating = this.dataset.rating;
+            stars.forEach((s, index) => {
+                if (index < rating) {
+                    s.style.color = '#ffc107';
+                } else {
+                    s.style.color = '#e9ecef';
+                }
+            });
+        });
+    });
+});
+
+function showTrackingModal(orderNumber) {
+    document.getElementById('trackingModalLabel').innerHTML =
+        '<i class="fas fa-truck me-2"></i>Track Order #' + orderNumber;
+
+    const modal = new bootstrap.Modal(document.getElementById('trackingModal'));
+    modal.show();
+}
+
+function showReviewModal(productName) {
+    document.getElementById('reviewModalLabel').innerHTML =
+        '<i class="fas fa-star me-2"></i>Review: ' + productName;
+
+    const modal = new bootstrap.Modal(document.getElementById('reviewModal'));
+    modal.show();
+}
+
+// Add timeline styles
+const timelineStyle = document.createElement('style');
+timelineStyle.textContent = `
+    .tracking-timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+
+    .tracking-timeline::before {
+        content: '';
+        position: absolute;
+        left: 30px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e9ecef;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 80px;
+        margin-bottom: 30px;
+    }
+
+    .timeline-icon {
+        position: absolute;
+        left: 15px;
+        top: 0;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        font-size: 0.8rem;
+    }
+
+    .timeline-item.completed .timeline-icon {
+        background: #28a745;
+        color: white;
+    }
+
+    .timeline-item.active .timeline-icon {
+        background: #007bff;
+        color: white;
+    }
+
+    .timeline-content h6 {
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+
+    .timeline-content p {
+        margin-bottom: 0;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .rating-stars {
+        display: flex;
+        gap: 5px;
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+    }
+
+    .rating-stars .fas {
+        color: #e9ecef;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+
+    .rating-stars .fas:hover {
+        color: #ffc107;
+    }
+`;
+document.head.appendChild(timelineStyle);
+</script>
+
+{% endblock %}

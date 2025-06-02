@@ -1,0 +1,400 @@
+<!-- File: templates/boarding/slot_management.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .admin-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px 0;
+        margin-bottom: 30px;
+    }
+
+    .slot-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .slot-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .slot-date {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .slot-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .availability-bar {
+        width: 100%;
+        height: 20px;
+        background: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 10px 0;
+        position: relative;
+    }
+
+    .availability-fill {
+        height: 100%;
+        transition: width 0.3s ease;
+        border-radius: 10px;
+    }
+
+    .availability-high {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+
+    .availability-medium {
+        background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    }
+
+    .availability-low {
+        background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+    }
+
+    .availability-full {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    }
+
+    .availability-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 0.8rem;
+        font-weight: bold;
+        color: white;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+
+    .slot-stats {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .edit-form {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 15px;
+        display: none;
+    }
+
+    .btn-edit {
+        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        color: white;
+        border: none;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border: none;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+
+    .btn-cancel {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        color: white;
+        border: none;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+
+    .weekend {
+        border-left: 4px solid #ffc107;
+    }
+
+    .today {
+        border-left: 4px solid #28a745;
+        background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%);
+    }
+
+    .past-date {
+        opacity: 0.6;
+        background: #f8f9fa;
+    }
+
+    .bulk-actions {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    @media (max-width: 768px) {
+        .slot-info {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .slot-card {
+            padding: 15px;
+        }
+
+        .bulk-actions {
+            padding: 20px;
+        }
+    }
+</style>
+
+<!-- Admin Header -->
+<div class="admin-header">
+    <div class="container">
+        <h1 class="display-6 mb-0">Slot Availability Management</h1>
+        <p class="mb-0">Manage daily boarding capacity and availability</p>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Bulk Actions -->
+    <div class="bulk-actions">
+        <h5 class="mb-3">Bulk Actions</h5>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label for="bulkSlots" class="form-label">Set slots for all dates</label>
+                <input type="number" id="bulkSlots" class="form-control" min="1" max="100" value="20">
+            </div>
+            <div class="col-md-4">
+                <label for="startDate" class="form-label">Start Date</label>
+                <input type="date" id="startDate" class="form-control" value="{{ today|date:'Y-m-d' }}">
+            </div>
+            <div class="col-md-4">
+                <label for="endDate" class="form-label">End Date</label>
+                <input type="date" id="endDate" class="form-control">
+            </div>
+            <div class="col-12">
+                <button type="button" class="btn btn-primary" onclick="bulkUpdateSlots()">
+                    <i class="fas fa-calendar-alt me-2"></i>Apply to Date Range
+                </button>
+                <button type="button" class="btn btn-outline-primary" onclick="resetToDefault()">
+                    <i class="fas fa-undo me-2"></i>Reset All to Default (20)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slot Cards -->
+    <div class="row">
+        {% for slot in slots %}
+        <div class="col-lg-4 col-md-6 col-12">
+            <div class="slot-card {% if slot.date == today %}today{% elif slot.date.weekday >= 5 %}weekend{% elif slot.date < today %}past-date{% endif %}"
+                 data-slot-id="{{ slot.id }}" data-date="{{ slot.date|date:'Y-m-d' }}">
+
+                <div class="slot-date">
+                    {{ slot.date|date:"l, M d, Y" }}
+                    {% if slot.date == today %}
+                        <span class="badge bg-success ms-2">Today</span>
+                    {% elif slot.date < today %}
+                        <span class="badge bg-secondary ms-2">Past</span>
+                    {% elif slot.date.weekday >= 5 %}
+                        <span class="badge bg-warning ms-2">Weekend</span>
+                    {% endif %}
+                </div>
+
+                <div class="slot-info">
+                    <div class="slot-stats">
+                        <strong>{{ slot.remaining_slots }}</strong> of <strong>{{ slot.available_slots }}</strong> available<br>
+                        <small>{{ slot.booked_slots }} booked</small>
+                    </div>
+                    {% if slot.date >= today %}
+                    <button class="btn btn-edit" onclick="toggleEdit('{{ slot.id }}')">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    {% endif %}
+                </div>
+
+                <!-- Availability Bar -->
+                <div class="availability-bar">
+                    {% with percentage=slot.booked_slots|default:0 %}
+                    {% with remaining_percentage=slot.remaining_slots|default:0 %}
+                    <div class="availability-fill
+                        {% if remaining_percentage > 15 %}availability-high
+                        {% elif remaining_percentage > 5 %}availability-medium
+                        {% elif remaining_percentage > 0 %}availability-low
+                        {% else %}availability-full
+                        {% endif %}"
+                         style="width: {% widthratio slot.booked_slots slot.available_slots 100 %}%">
+                    </div>
+                    <div class="availability-text">
+                        {% widthratio slot.booked_slots slot.available_slots 100 %}% Booked
+                    </div>
+                    {% endwith %}
+                    {% endwith %}
+                </div>
+
+                <!-- Edit Form -->
+                {% if slot.date >= today %}
+                <div class="edit-form" id="edit-form-{{ slot.id }}">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="slot_id" value="{{ slot.id }}">
+                        <div class="mb-3">
+                            <label for="slots-{{ slot.id }}" class="form-label">Available Slots</label>
+                            <input type="number" name="available_slots" id="slots-{{ slot.id }}"
+                                   class="form-control" value="{{ slot.available_slots }}"
+                                   min="{{ slot.booked_slots }}" max="100">
+                            <small class="text-muted">
+                                Minimum: {{ slot.booked_slots }} (already booked)
+                            </small>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-save">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                            <button type="button" class="btn btn-cancel" onclick="toggleEdit('{{ slot.id }}')">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="slot-card">
+                <h5 class="mb-3">Quick Statistics</h5>
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="stats-number" style="color: #28a745;">
+                            {% with total_available=slots|length %}{{ total_available }}{% endwith %}
+                        </div>
+                        <div class="stats-label">Total Days</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-number" style="color: #17a2b8;">
+                            {% with total_slots=0 %}
+                                {% for slot in slots %}
+                                    {% with total_slots=total_slots|add:slot.available_slots %}{% endwith %}
+                                {% endfor %}
+                                {{ total_slots }}
+                            {% endwith %}
+                        </div>
+                        <div class="stats-label">Total Slots</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-number" style="color: #ffc107;">
+                            {% with total_booked=0 %}
+                                {% for slot in slots %}
+                                    {% with total_booked=total_booked|add:slot.booked_slots %}{% endwith %}
+                                {% endfor %}
+                                {{ total_booked }}
+                            {% endwith %}
+                        </div>
+                        <div class="stats-label">Booked Slots</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-number" style="color: #dc3545;">
+                            {% with fully_booked=0 %}
+                                {% for slot in slots %}
+                                    {% if not slot.is_available %}
+                                        {% with fully_booked=fully_booked|add:1 %}{% endwith %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ fully_booked }}
+                            {% endwith %}
+                        </div>
+                        <div class="stats-label">Fully Booked</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleEdit(slotId) {
+    const editForm = document.getElementById(`edit-form-${slotId}`);
+    const isVisible = editForm.style.display === 'block';
+
+    // Hide all edit forms
+    document.querySelectorAll('.edit-form').forEach(form => {
+        form.style.display = 'none';
+    });
+
+    // Show/hide the clicked form
+    if (!isVisible) {
+        editForm.style.display = 'block';
+    }
+}
+
+function bulkUpdateSlots() {
+    const bulkSlots = document.getElementById('bulkSlots').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    if (!bulkSlots || !startDate || !endDate) {
+        alert('Please fill in all fields for bulk update.');
+        return;
+    }
+
+    if (confirm(`Set ${bulkSlots} slots for all dates from ${startDate} to ${endDate}?`)) {
+        // In production, this would be an AJAX call
+        const formData = new FormData();
+        formData.append('bulk_update', 'true');
+        formData.append('slots', bulkSlots);
+        formData.append('start_date', startDate);
+        formData.append('end_date', endDate);
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData
+        })
+        .then(() => {
+            alert('Bulk update completed!');
+            location.reload();
+        })
+        .catch(error => {
+            alert('Error updating slots: ' + error.message);
+        });
+    }
+}
+
+function resetToDefault() {
+    if (confirm('Reset all future dates to 20 slots?')) {
+        document.getElementById('bulkSlots').value = '20';
+        document.getElementById('startDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('endDate').value = new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0];
+        bulkUpdateSlots();
+    }
+}
+
+// Auto-save functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default end date (30 days from now)
+    const endDateInput = document.getElementById('endDate');
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+    endDateInput.value = thirtyDaysFromNow.toISOString().split('T')[0];
+});
+</script>
+
+{% endblock %}

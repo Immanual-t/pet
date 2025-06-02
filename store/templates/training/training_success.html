@@ -1,0 +1,443 @@
+<!-- File: store/templates/training/training_success.html -->
+<!-- Create this file in store/templates/training/ directory -->
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .success-section {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+        padding: 80px 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .success-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="rgba(255,255,255,0.1)"><polygon points="1000,100 1000,0 0,100"/></svg>');
+        background-size: cover;
+    }
+
+    .success-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .success-icon {
+        width: 120px;
+        height: 120px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 30px;
+        font-size: 4rem;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    .booking-details-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        margin-top: 40px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        color: #333;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: #666;
+    }
+
+    .detail-value {
+        font-weight: 700;
+        color: #333;
+    }
+
+    .schedule-section {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 30px;
+        margin: 30px 0;
+    }
+
+    .schedule-day {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 10px 0;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .schedule-day:hover {
+        transform: translateY(-2px);
+    }
+
+    .day-number {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 15px;
+    }
+
+    .action-buttons {
+        margin-top: 40px;
+    }
+
+    .btn-custom {
+        padding: 15px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+
+    .btn-outline-primary {
+        border: 2px solid #667eea;
+        color: #667eea;
+    }
+
+    .btn-outline-primary:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .next-steps {
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        border-radius: 15px;
+        padding: 30px;
+        margin: 30px 0;
+    }
+
+    .step-item {
+        display: flex;
+        align-items: center;
+        margin: 15px 0;
+    }
+
+    .step-icon {
+        background: #fff;
+        color: #f093fb;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+        .success-section {
+            padding: 50px 0;
+        }
+
+        .booking-details-card {
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .detail-row {
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        .detail-value {
+            margin-top: 5px;
+        }
+
+        .btn-custom {
+            width: 100%;
+            margin: 5px 0;
+        }
+    }
+</style>
+
+<!-- Success Section -->
+<section class="success-section">
+    <div class="success-content">
+        <div class="container">
+            <div class="success-icon">
+                🎉
+            </div>
+            <h1 class="display-4 mb-4" data-aos="fade-up">Training Booked Successfully!</h1>
+            <p class="lead mb-4" data-aos="fade-up" data-aos-delay="200">
+                Congratulations! {{ booking.pet_name }}'s training program has been scheduled.
+            </p>
+            <div class="badge bg-light text-dark p-3 fs-5" data-aos="fade-up" data-aos-delay="400">
+                <i class="fas fa-ticket-alt me-2"></i>Booking ID: #{{ booking.id }}
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            <!-- Booking Details -->
+            <div class="booking-details-card" data-aos="fade-up">
+                <h3 class="text-center mb-4">📋 Training Booking Details</h3>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="text-primary mb-3">🐾 Pet Information</h5>
+                        <div class="detail-row">
+                            <span class="detail-label">Pet Name:</span>
+                            <span class="detail-value">{{ booking.pet_name }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Pet Type:</span>
+                            <span class="detail-value">{{ booking.get_pet_type_display }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Age:</span>
+                            <span class="detail-value">{{ booking.pet_age }} months</span>
+                        </div>
+                        {% if booking.pet_breed %}
+                        <div class="detail-row">
+                            <span class="detail-label">Breed:</span>
+                            <span class="detail-value">{{ booking.pet_breed }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="detail-row">
+                            <span class="detail-label">Current Level:</span>
+                            <span class="detail-value">{{ booking.get_current_skill_level_display }}</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h5 class="text-primary mb-3">📅 Training Schedule</h5>
+                        <div class="detail-row">
+                            <span class="detail-label">Start Date:</span>
+                            <span class="detail-value">{{ booking.start_date|date:"F j, Y" }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">End Date:</span>
+                            <span class="detail-value">{{ booking.end_date|date:"F j, Y" }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Time Slot:</span>
+                            <span class="detail-value">{{ booking.get_training_time_slot_display }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Duration:</span>
+                            <span class="detail-value">7 Days Intensive Program</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Total Cost:</span>
+                            <span class="detail-value text-success">₹{{ booking.total_price }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {% if booking.training_goals %}
+                <div class="mt-4">
+                    <h6 class="text-primary">🎯 Training Goals:</h6>
+                    <p class="mb-0">{{ booking.training_goals }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Training Schedule -->
+            <div class="schedule-section" data-aos="fade-up" data-aos-delay="200">
+                <h3 class="text-center mb-4">📚 7-Day Training Schedule</h3>
+                <p class="text-center text-muted mb-4">Here's what {{ booking.pet_name }} will learn each day</p>
+
+                <div class="row">
+                    {% for day, details in training_schedule.items %}
+                    <div class="col-lg-6 mb-3">
+                        <div class="schedule-day">
+                            <div class="d-flex align-items-center">
+                                <div class="day-number">{{ day }}</div>
+                                <div>
+                                    <h6 class="mb-1">{{ details.icon }} {{ details.title }}</h6>
+                                    <ul class="mb-0 small">
+                                        {% for activity in details.activities %}
+                                        <li>{{ activity }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="next-steps" data-aos="fade-up" data-aos-delay="400">
+                <h3 class="text-center mb-4">🚀 What Happens Next?</h3>
+
+                <div class="step-item">
+                    <div class="step-icon">1</div>
+                    <div>
+                        <h6 class="mb-1">Booking Confirmation</h6>
+                        <p class="mb-0">You'll receive an email confirmation within 24 hours with detailed instructions.</p>
+                    </div>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-icon">2</div>
+                    <div>
+                        <h6 class="mb-1">Pre-Training Consultation</h6>
+                        <p class="mb-0">Our trainer will call you 2 days before to discuss your pet's specific needs.</p>
+                    </div>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-icon">3</div>
+                    <div>
+                        <h6 class="mb-1">Training Begins</h6>
+                        <p class="mb-0">Bring {{ booking.pet_name }} to our facility on {{ booking.start_date|date:"F j, Y" }} during your time slot.</p>
+                    </div>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-icon">4</div>
+                    <div>
+                        <h6 class="mb-1">Daily Progress Updates</h6>
+                        <p class="mb-0">Receive photos, videos, and progress reports every day during training.</p>
+                    </div>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-icon">5</div>
+                    <div>
+                        <h6 class="mb-1">Graduation & Pickup</h6>
+                        <p class="mb-0">Attend the graduation ceremony and receive your pet's training certificate!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Important Information -->
+            <div class="alert alert-info" data-aos="fade-up" data-aos-delay="600">
+                <h5><i class="fas fa-info-circle me-2"></i>Important Information</h5>
+                <ul class="mb-0">
+                    <li><strong>What to Bring:</strong> Your pet's favorite toy, vaccination records, and any medications.</li>
+                    <li><strong>Training Location:</strong> Pet Paradise Training Center, [Your Address]</li>
+                    <li><strong>Contact:</strong> For any questions, call us at [Your Phone] or email [Your Email]</li>
+                    <li><strong>Cancellation Policy:</strong> Free cancellation up to 48 hours before start date.</li>
+                    <li><strong>Progress Tracking:</strong> Login to your account to view daily progress updates and photos.</li>
+                </ul>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons text-center" data-aos="fade-up" data-aos-delay="800">
+                <a href="/my-training-bookings/" class="btn btn-primary btn-custom">
+                    <i class="fas fa-calendar-alt me-2"></i>View My Training Bookings
+                </a>
+                <a href="/training/" class="btn btn-outline-primary btn-custom">
+                    <i class="fas fa-plus me-2"></i>Book Another Training
+                </a>
+                <a href="/first" class="btn btn-outline-secondary btn-custom">
+                    <i class="fas fa-home me-2"></i>Back to Home
+                </a>
+            </div>
+
+            <!-- Social Sharing -->
+            <div class="text-center mt-4" data-aos="fade-up" data-aos-delay="1000">
+                <p class="text-muted mb-3">Share the good news!</p>
+                <div>
+                    <a href="https://facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="btn btn-outline-primary btn-sm me-2">
+                        <i class="fab fa-facebook-f me-1"></i>Facebook
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Just booked professional training for {{ booking.pet_name }} at Pet Paradise! 🐾🎓" target="_blank" class="btn btn-outline-info btn-sm me-2">
+                        <i class="fab fa-twitter me-1"></i>Twitter
+                    </a>
+                    <a href="https://wa.me/?text=Great news! I just booked professional training for {{ booking.pet_name }} at Pet Paradise! 🐾🎓" target="_blank" class="btn btn-outline-success btn-sm">
+                        <i class="fab fa-whatsapp me-1"></i>WhatsApp
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Countdown timer to start date
+document.addEventListener('DOMContentLoaded', function() {
+    const startDate = new Date('{{ booking.start_date|date:"Y-m-d" }}');
+    const today = new Date();
+    const diffTime = startDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 0) {
+        // Add countdown display
+        const countdownHTML = `
+            <div class="alert alert-success mt-4 text-center">
+                <h5><i class="fas fa-clock me-2"></i>Training starts in ${diffDays} day${diffDays !== 1 ? 's' : ''}!</h5>
+                <p class="mb-0">Get {{ booking.pet_name }} ready for an amazing learning experience!</p>
+            </div>
+        `;
+        document.querySelector('.booking-details-card').insertAdjacentHTML('afterend', countdownHTML);
+    }
+
+    // Auto-save booking ID to clipboard
+    const bookingId = '#{{ booking.id }}';
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(bookingId).then(() => {
+            console.log('Booking ID copied to clipboard');
+        });
+    }
+});
+
+// Smooth scrolling for any anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+</script>
+
+{% endblock %}

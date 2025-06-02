@@ -1,0 +1,844 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% load cart %}
+{% load custom_filter %}
+
+<style>
+/* Enhanced Cart Page Styling */
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --success-gradient: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    --warning-gradient: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    --shadow-soft: 0 10px 30px rgba(0,0,0,0.1);
+    --shadow-hover: 0 20px 60px rgba(0,0,0,0.15);
+    --border-radius: 20px;
+    --transition-smooth: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+/* Page Header */
+.cart-header {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 60px 0 40px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 40px;
+}
+
+.cart-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="rgba(255,255,255,0.1)"><polygon points="1000,100 1000,0 0,100"/></svg>');
+    background-size: cover;
+}
+
+.header-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+}
+
+.cart-title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.cart-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* Cart Container */
+.cart-container {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 40px;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.cart-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-gradient);
+}
+
+/* Cart Items */
+.cart-item {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    transition: var(--transition-smooth);
+    border: 1px solid #e9ecef;
+    position: relative;
+    overflow: hidden;
+}
+
+.cart-item:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-soft);
+    border-color: transparent;
+}
+
+.cart-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--secondary-gradient);
+    transform: scaleX(0);
+    transition: var(--transition-smooth);
+}
+
+.cart-item:hover::before {
+    transform: scaleX(1);
+}
+
+.item-image {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: var(--transition-smooth);
+}
+
+.cart-item:hover .item-image {
+    transform: scale(1.05);
+}
+
+.item-details {
+    flex: 1;
+    padding-left: 25px;
+}
+
+.item-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+    line-height: 1.3;
+}
+
+.item-category {
+    color: #667eea;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 15px;
+}
+
+.item-price {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #28a745;
+    margin-bottom: 15px;
+}
+
+.price-currency {
+    font-size: 1rem;
+    color: #667eea;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: white;
+    padding: 10px 15px;
+    border-radius: 25px;
+    border: 2px solid #e9ecef;
+    width: fit-content;
+}
+
+.quantity-btn {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: none;
+    background: var(--primary-gradient);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-smooth);
+    cursor: pointer;
+}
+
+.quantity-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.quantity-display {
+    font-weight: 700;
+    color: #333;
+    min-width: 40px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.item-total {
+    text-align: right;
+    padding-left: 25px;
+}
+
+.total-amount {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.remove-item {
+    background: var(--warning-gradient);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+    margin-top: 10px;
+}
+
+.remove-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
+}
+
+/* Order Summary */
+.order-summary {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e9f4ff 100%);
+    border-radius: var(--border-radius);
+    padding: 30px;
+    box-shadow: var(--shadow-soft);
+    position: sticky;
+    top: 100px;
+}
+
+.summary-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 25px;
+    text-align: center;
+    position: relative;
+}
+
+.summary-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 3px;
+    background: var(--primary-gradient);
+    border-radius: 2px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+    font-weight: 500;
+}
+
+.summary-row:last-of-type {
+    border-bottom: 2px solid var(--primary-gradient);
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+}
+
+.summary-label {
+    color: #666;
+}
+
+.summary-value {
+    color: #333;
+    font-weight: 600;
+}
+
+.total-row {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #28a745;
+}
+
+.checkout-btn {
+    width: 100%;
+    background: var(--success-gradient);
+    color: white;
+    border: none;
+    padding: 18px 25px;
+    border-radius: 15px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+}
+
+.checkout-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(40, 167, 69, 0.4);
+}
+
+.checkout-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: var(--transition-smooth);
+}
+
+.checkout-btn:hover::before {
+    left: 100%;
+}
+
+.continue-shopping {
+    display: block;
+    text-align: center;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 10px;
+    transition: var(--transition-smooth);
+}
+
+.continue-shopping:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+/* Empty Cart */
+.empty-cart {
+    text-align: center;
+    padding: 80px 20px;
+    color: #666;
+}
+
+.empty-cart i {
+    font-size: 5rem;
+    color: #ddd;
+    margin-bottom: 30px;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.empty-cart h3 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.empty-cart p {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.shop-now-btn {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: var(--transition-smooth);
+}
+
+.shop-now-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+/* Security Badge */
+.security-badge {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 20px;
+    text-align: center;
+    border: 1px solid #e9ecef;
+}
+
+.security-text {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.security-icons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.security-icon {
+    color: #28a745;
+    font-size: 1.2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .cart-title {
+        font-size: 2.2rem;
+    }
+
+    .cart-container {
+        padding: 20px;
+    }
+
+    .cart-item {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .item-details {
+        padding-left: 0;
+        padding-top: 20px;
+    }
+
+    .item-total {
+        padding-left: 0;
+        padding-top: 15px;
+        text-align: center;
+    }
+
+    .quantity-controls {
+        justify-content: center;
+        margin: 15px auto;
+    }
+
+    .order-summary {
+        position: static;
+        margin-top: 30px;
+    }
+}
+
+/* Checkout Modal Enhancement */
+.modal-content {
+    border-radius: var(--border-radius);
+    border: none;
+    overflow: hidden;
+}
+
+.modal-header {
+    background: var(--primary-gradient);
+    color: white;
+    border-bottom: none;
+    padding: 25px 30px;
+}
+
+.modal-title {
+    font-weight: 700;
+    font-size: 1.3rem;
+}
+
+.btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+}
+
+.btn-close:hover {
+    opacity: 1;
+}
+
+.modal-body {
+    padding: 30px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 12px 15px;
+    font-size: 1rem;
+    transition: var(--transition-smooth);
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn-primary {
+    background: var(--success-gradient);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: var(--transition-smooth);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(40, 167, 69, 0.4);
+}
+
+/* Loading State */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
+
+<!-- Cart Header -->
+<section class="cart-header">
+    <div class="container">
+        <div class="header-content">
+            <h1 class="cart-title">🛒 Your Shopping Cart</h1>
+            <p class="cart-subtitle">Review your items and proceed to checkout</p>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    {% if products %}
+    <div class="row">
+        <!-- Cart Items -->
+        <div class="col-lg-8">
+            <div class="cart-container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0">
+                        <i class="fas fa-shopping-bag me-2"></i>
+                        Cart Items ({{ products|length }})
+                    </h4>
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt me-1"></i>
+                        Secure checkout
+                    </small>
+                </div>
+
+                {% for product in products %}
+                <div class="cart-item d-flex align-items-center" data-product-id="{{ product.id }}">
+                    <img src="{{ product.image.url }}"
+                         class="item-image"
+                         alt="{{ product.name }}"
+                         onerror="this.src='/static/images/product-placeholder.jpg';">
+
+                    <div class="item-details">
+                        <div class="item-category">Pet Products</div>
+                        <h5 class="item-name">{{ product.name }}</h5>
+                        <div class="item-price">
+                            <span class="price-currency">₹</span>{{ product.price }}
+                        </div>
+
+                        <div class="quantity-controls">
+                            <form method="post" action="/" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="product" value="{{ product.id }}">
+                                <input type="hidden" name="remove" value="True">
+                                <button type="submit" class="quantity-btn" title="Decrease quantity">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </form>
+
+                            <span class="quantity-display">{{ product|cart_quantity:request.session.cart }}</span>
+
+                            <form method="post" action="/" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="product" value="{{ product.id }}">
+                                <button type="submit" class="quantity-btn" title="Increase quantity">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="item-total">
+                        <div class="total-amount">{{ product|price_total:request.session.cart|currency }}</div>
+                        <form method="post" action="/" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="product" value="{{ product.id }}">
+                            <input type="hidden" name="remove_all" value="True">
+                            <button type="submit" class="remove-item" title="Remove from cart">
+                                <i class="fas fa-trash me-1"></i>Remove
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+            <div class="order-summary">
+                <h4 class="summary-title">Order Summary</h4>
+
+                <div class="summary-row">
+                    <span class="summary-label">Subtotal:</span>
+                    <span class="summary-value">{{ products|total_cart_price:request.session.cart|currency }}</span>
+                </div>
+
+                <div class="summary-row">
+                    <span class="summary-label">Shipping:</span>
+                    <span class="summary-value text-success">Free</span>
+                </div>
+
+                <div class="summary-row">
+                    <span class="summary-label">Tax:</span>
+                    <span class="summary-value">Included</span>
+                </div>
+
+                <div class="summary-row total-row">
+                    <span class="summary-label">Total:</span>
+                    <span class="summary-value">{{ products|total_cart_price:request.session.cart|currency }}</span>
+                </div>
+
+                <button type="button"
+                        class="checkout-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#checkoutModal">
+                    <i class="fas fa-credit-card me-2"></i>
+                    Proceed to Checkout
+                </button>
+
+                <a href="/" class="continue-shopping">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Continue Shopping
+                </a>
+
+                <!-- Security Badge -->
+                <div class="security-badge">
+                    <div class="security-text">
+                        <i class="fas fa-lock me-1"></i>
+                        Secure & Encrypted Checkout
+                    </div>
+                    <div class="security-icons">
+                        <i class="fas fa-shield-alt security-icon" title="SSL Protected"></i>
+                        <i class="fas fa-credit-card security-icon" title="Secure Payment"></i>
+                        <i class="fas fa-truck security-icon" title="Fast Delivery"></i>
+                        <i class="fas fa-undo security-icon" title="Easy Returns"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Empty Cart -->
+    <div class="cart-container">
+        <div class="empty-cart">
+            <i class="fas fa-shopping-cart"></i>
+            <h3>Your cart is empty</h3>
+            <p>Looks like you haven't added anything to your cart yet.</p>
+            <a href="/" class="shop-now-btn">
+                <i class="fas fa-shopping-bag me-2"></i>
+                Start Shopping
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Enhanced Checkout Modal -->
+<div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="checkoutModalLabel">
+                    <i class="fas fa-credit-card me-2"></i>
+                    Complete Your Order
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/check-out" method="POST" id="checkoutForm">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                Delivery Information
+                            </h6>
+
+                            <div class="form-group mb-3">
+                                <label for="address" class="form-label">Delivery Address *</label>
+                                <textarea name="address"
+                                         id="address"
+                                         class="form-control"
+                                         rows="3"
+                                         placeholder="Enter your complete delivery address"
+                                         required></textarea>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="phone" class="form-label">Phone Number *</label>
+                                <input type="tel"
+                                       name="phone"
+                                       id="phone"
+                                       class="form-control"
+                                       placeholder="+91 9876543210"
+                                       required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-receipt me-2"></i>
+                                Order Summary
+                            </h6>
+
+                            <div class="bg-light p-3 rounded mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Items ({{ products|length }}):</span>
+                                    <span>{{ products|total_cart_price:request.session.cart|currency }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Delivery:</span>
+                                    <span class="text-success">Free</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Tax:</span>
+                                    <span>Included</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between fw-bold">
+                                    <span>Total:</span>
+                                    <span class="text-success">{{ products|total_cart_price:request.session.cart|currency }}</span>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <small>Payment will be collected on delivery (Cash on Delivery)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-3 mt-4">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="placeOrderBtn">
+                            <i class="fas fa-check me-2"></i>
+                            Place Order
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form submission handling
+    const checkoutForm = document.getElementById('checkoutForm');
+    const placeOrderBtn = document.getElementById('placeOrderBtn');
+
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', function(e) {
+            // Add loading state
+            placeOrderBtn.innerHTML = '<span class="spinner me-2"></span>Processing...';
+            placeOrderBtn.disabled = true;
+        });
+    }
+
+    // Add animation to cart items
+    const cartItems = document.querySelectorAll('.cart-item');
+    cartItems.forEach((item, index) => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(30px)';
+
+        setTimeout(() => {
+            item.style.transition = 'all 0.6s ease';
+            item.style.opacity = '1';
+            item.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+
+    // Quantity button feedback
+    const quantityBtns = document.querySelectorAll('.quantity-btn');
+    quantityBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+            }, 100);
+        });
+    });
+
+    // Remove button confirmation
+    const removeButtons = document.querySelectorAll('.remove-item');
+    removeButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            if (!confirm('Are you sure you want to remove this item from your cart?')) {
+                e.preventDefault();
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}

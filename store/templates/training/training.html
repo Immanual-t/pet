@@ -1,0 +1,941 @@
+<!-- File: store/templates/training/training.html -->
+<!-- Create this file in store/templates/training/ directory -->
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+        color: white;
+        padding: 80px 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="rgba(255,255,255,0.1)"><polygon points="1000,100 1000,0 0,100"/></svg>');
+        background-size: cover;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .feature-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        border: 3px solid transparent;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+        border-color: #ff9a9e;
+    }
+
+    .feature-icon {
+        width: 90px;
+        height: 90px;
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 2.5rem;
+        color: white;
+        box-shadow: 0 10px 20px rgba(255, 154, 158, 0.3);
+    }
+
+    .training-schedule {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 40px;
+        margin: 40px 0;
+    }
+
+    .schedule-day {
+        background: rgba(255,255,255,0.1);
+        border-radius: 15px;
+        padding: 20px;
+        margin: 15px 0;
+        transition: background 0.3s ease;
+    }
+
+    .schedule-day:hover {
+        background: rgba(255,255,255,0.2);
+    }
+
+    .day-icon {
+        font-size: 2rem;
+        margin-right: 15px;
+    }
+
+    .pricing-card {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        margin: 20px 0;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .pricing-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: shimmer 3s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .booking-form {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        margin-top: 50px;
+        position: relative;
+    }
+
+    .form-section {
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        color: #ff9a9e;
+        font-weight: 700;
+        margin-bottom: 20px;
+        border-bottom: 3px solid #ff9a9e;
+        padding-bottom: 10px;
+        display: inline-block;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 15px 20px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+    }
+
+    .form-control:focus {
+        border-color: #ff9a9e;
+        box-shadow: 0 0 0 0.2rem rgba(255, 154, 158, 0.25);
+        background: white;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        border: none;
+        padding: 18px 40px;
+        border-radius: 50px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(255, 154, 158, 0.4);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(255, 154, 158, 0.5);
+    }
+
+    .availability-display {
+        background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        margin: 20px 0;
+        font-size: 1.1rem;
+        font-weight: bold;
+    }
+
+    .cost-display {
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        color: #333;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        margin: 20px 0;
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+
+    .auth-required-section {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        color: white;
+        padding: 80px 0;
+        text-align: center;
+        border-radius: 20px;
+        margin: 50px 0;
+    }
+
+    .auth-card {
+        background: white;
+        color: #333;
+        border-radius: 20px;
+        padding: 50px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .auth-icon {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 30px;
+        font-size: 3rem;
+        color: white;
+        box-shadow: 0 15px 30px rgba(255, 154, 158, 0.3);
+    }
+
+    .certification-badges {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        margin: 40px 0;
+    }
+
+    .badge-item {
+        text-align: center;
+        margin: 10px;
+        padding: 20px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 15px;
+        transition: transform 0.3s ease;
+    }
+
+    .badge-item:hover {
+        transform: scale(1.05);
+    }
+
+    .trainer-profile {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        margin: 20px 0;
+    }
+
+    .trainer-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 2.5rem;
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .hero-section {
+            padding: 50px 0;
+        }
+
+        .booking-form {
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .feature-card {
+            margin-bottom: 30px;
+        }
+
+        .auth-card {
+            padding: 30px 20px;
+            margin: 20px;
+        }
+    }
+</style>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-content">
+        <div class="container">
+            <h1 class="display-4 mb-4" data-aos="fade-up">🎓 Professional Pet Training</h1>
+            <p class="lead mb-5" data-aos="fade-up" data-aos-delay="200">
+                Transform your pet's behavior with our expert 7-day intensive training program.
+                Specialized courses for dogs and cats with certified trainers.
+            </p>
+            <a href="{% if user_authenticated %}#booking-form{% else %}#auth-section{% endif %}" class="btn btn-light btn-lg" data-aos="fade-up" data-aos-delay="400">
+                {% if user_authenticated %}Book Training Now{% else %}Get Started{% endif %}
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5" style="background-color: #f8f9fa;">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="display-5 mb-3" data-aos="fade-up">Why Choose Our Training Program?</h2>
+                <p class="lead text-muted" data-aos="fade-up" data-aos-delay="200">Professional, caring, and effective training for your beloved pets</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        🏆
+                    </div>
+                    <h5>Certified Trainers</h5>
+                    <p class="text-muted">Expert trainers with years of experience and professional certifications in animal behavior.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        📅
+                    </div>
+                    <h5>7-Day Intensive Program</h5>
+                    <p class="text-muted">Comprehensive week-long training covering obedience, socialization, and behavioral correction.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        🐕‍🦺
+                    </div>
+                    <h5>Dog & Cat Specialists</h5>
+                    <p class="text-muted">Tailored programs specifically designed for dogs and cats with species-appropriate techniques.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        📱
+                    </div>
+                    <h5>Daily Progress Updates</h5>
+                    <p class="text-muted">Real-time progress tracking with photos, videos, and detailed skill assessments every day.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Training Schedule Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="training-schedule" data-aos="fade-up">
+            <h2 class="text-center mb-4">📋 7-Day Training Schedule</h2>
+            <p class="text-center mb-4">Our structured program ensures comprehensive learning and development</p>
+
+            <div class="row">
+                {% for day, details in training_schedule.items %}
+                <div class="col-lg-6 mb-3">
+                    <div class="schedule-day">
+                        <div class="d-flex align-items-center">
+                            <span class="day-icon">{{ details.icon }}</span>
+                            <div>
+                                <h5 class="mb-2">Day {{ day }}: {{ details.title }}</h5>
+                                <ul class="mb-0">
+                                    {% for activity in details.activities %}
+                                    <li>{{ activity }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing Section -->
+<section class="py-5" style="background-color: #f8f9fa;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 text-center">
+                <h2 class="display-5 mb-4" data-aos="fade-up">Training Packages</h2>
+                <div class="row">
+                    <div class="col-md-6" data-aos="fade-up" data-aos-delay="200">
+                        <div class="pricing-card">
+                            <h4>🐕 Dog Training</h4>
+                            <div class="display-4 mb-3">₹2,500</div>
+                            <p class="mb-3">7-day comprehensive program</p>
+                            <ul class="list-unstyled">
+                                <li>✓ Obedience Training</li>
+                                <li>✓ Leash Training</li>
+                                <li>✓ Socialization</li>
+                                <li>✓ Behavioral Correction</li>
+                                <li>✓ Basic Commands</li>
+                                <li>✓ Daily Progress Reports</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6" data-aos="fade-up" data-aos-delay="300">
+                        <div class="pricing-card">
+                            <h4>🐱 Cat Training</h4>
+                            <div class="display-4 mb-3">₹2,000</div>
+                            <p class="mb-3">7-day specialized program</p>
+                            <ul class="list-unstyled">
+                                <li>✓ Litter Box Training</li>
+                                <li>✓ Scratching Post Use</li>
+                                <li>✓ Socialization</li>
+                                <li>✓ Behavioral Issues</li>
+                                <li>✓ Interactive Play</li>
+                                <li>✓ Daily Progress Reports</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Trainer Profiles Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="display-5 mb-3" data-aos="fade-up">Meet Our Expert Trainers</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="trainer-profile">
+                    <div class="trainer-avatar">👨‍⚕️</div>
+                    <h5>Dr. Rajesh Kumar</h5>
+                    <p class="text-muted mb-2">Lead Animal Behaviorist</p>
+                    <small>15+ years experience, Certified Animal Trainer</small>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="trainer-profile">
+                    <div class="trainer-avatar">👩‍⚕️</div>
+                    <h5>Priya Sharma</h5>
+                    <p class="text-muted mb-2">Cat Training Specialist</p>
+                    <small>10+ years experience, Feline Behavior Expert</small>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="trainer-profile">
+                    <div class="trainer-avatar">👨‍🏫</div>
+                    <h5>Amit Patel</h5>
+                    <p class="text-muted mb-2">Dog Obedience Expert</p>
+                    <small>12+ years experience, Canine Behavior Specialist</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Certifications Section -->
+<section class="py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+    <div class="container">
+        <div class="row text-center mb-4">
+            <div class="col-12">
+                <h2 class="mb-3" data-aos="fade-up">🏅 Our Certifications & Trust</h2>
+            </div>
+        </div>
+
+        <div class="certification-badges">
+            <div class="badge-item" data-aos="fade-up" data-aos-delay="100">
+                <div style="font-size: 3rem;">🏆</div>
+                <h6>CCPDT Certified</h6>
+                <small>Professional Dog Trainers</small>
+            </div>
+            <div class="badge-item" data-aos="fade-up" data-aos-delay="200">
+                <div style="font-size: 3rem;">⭐</div>
+                <h6>5-Star Rated</h6>
+                <small>200+ Happy Customers</small>
+            </div>
+            <div class="badge-item" data-aos="fade-up" data-aos-delay="300">
+                <div style="font-size: 3rem;">🛡️</div>
+                <h6>Insured & Bonded</h6>
+                <small>Complete Protection</small>
+            </div>
+            <div class="badge-item" data-aos="fade-up" data-aos-delay="400">
+                <div style="font-size: 3rem;">💚</div>
+                <h6>Positive Methods</h6>
+                <small>No Harsh Techniques</small>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Authentication Required Section (shown when not logged in) -->
+{% if not user_authenticated %}
+<section class="py-5" id="auth-section">
+    <div class="container">
+        <div class="auth-required-section" data-aos="fade-up">
+            <div class="auth-card">
+                <div class="auth-icon">
+                    🔐
+                </div>
+                <h2 class="mb-4">Create Account to Book Training</h2>
+                <p class="lead mb-4">
+                    Join our training community and give your pet the best professional education available.
+                </p>
+
+                <div class="row text-start">
+                    <div class="col-md-6">
+                        <h5 class="text-primary mb-3">🎯 Training Benefits</h5>
+                        <ul>
+                            <li>✨ <strong>Improved Behavior:</strong> Address problematic behaviors</li>
+                            <li>🤝 <strong>Better Bonding:</strong> Strengthen your relationship</li>
+                            <li>🏠 <strong>House Training:</strong> Proper etiquette at home</li>
+                            <li>🦮 <strong>Safety Skills:</strong> Essential commands for safety</li>
+                            <li>🎾 <strong>Social Skills:</strong> Interaction with others</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="text-primary mb-3">📱 Account Features</h5>
+                        <ul>
+                            <li>📊 <strong>Progress Tracking:</strong> Daily skill assessments</li>
+                            <li>📸 <strong>Photo Updates:</strong> See your pet's training</li>
+                            <li>📅 <strong>Schedule Management:</strong> Easy booking system</li>
+                            <li>💬 <strong>Trainer Communication:</strong> Direct contact</li>
+                            <li>📋 <strong>Training History:</strong> Complete records</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="alert alert-info mt-4">
+                    <strong>🚀 Quick Start:</strong> Create your account in under 2 minutes and book training immediately!
+                </div>
+
+                <div class="auth-buttons mt-4">
+                    <a href="{{ login_url }}" class="btn btn-success btn-lg me-3">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                    <a href="{{ signup_url }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Booking Form (only shown when logged in) -->
+{% if user_authenticated %}
+<section class="py-5" style="background-color: #f8f9fa;" id="booking-form">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+
+                <!-- Display Messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="booking-form" data-aos="fade-up">
+                    <div class="text-center mb-4">
+                        <h2>🎓 Book Your Pet's Training Program</h2>
+                        <p class="text-muted">Start your pet's transformation journey today!</p>
+                    </div>
+
+                    <form method="POST" id="trainingForm">
+                        {% csrf_token %}
+
+                        <!-- Pet Information Section -->
+                        <div class="form-section">
+                            <h4 class="section-title">🐾 Pet Information</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Pet Name *</label>
+                                        <input type="text" name="pet_name" class="form-control" required
+                                               value="{{ form_data.pet_name|default:'' }}"
+                                               placeholder="Enter your pet's name">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Pet Type *</label>
+                                        <select name="pet_type" id="petType" class="form-control" required>
+                                            <option value="">Select Pet Type</option>
+                                            {% for value, label in pet_types %}
+                                                <option value="{{ value }}"
+                                                    {% if form_data.pet_type == value %}selected{% endif %}>
+                                                    {{ label }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                        <small class="text-muted">Training available for dogs and cats only</small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Pet Age (months) *</label>
+                                        <input type="number" name="pet_age" class="form-control" min="3" required
+                                               value="{{ form_data.pet_age|default:'' }}"
+                                               placeholder="Age in months">
+                                        <small class="text-muted">Minimum age: 3 months</small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Pet Breed</label>
+                                        <input type="text" name="pet_breed" class="form-control"
+                                               value="{{ form_data.pet_breed|default:'' }}"
+                                               placeholder="Enter breed (optional)">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Current Skill Level *</label>
+                                        <select name="current_skill_level" class="form-control" required>
+                                            <option value="">Select Current Level</option>
+                                            {% for value, label in skill_levels %}
+                                                <option value="{{ value }}"
+                                                    {% if form_data.current_skill_level == value %}selected{% endif %}>
+                                                    {{ label }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Owner Information Section -->
+                        <div class="form-section">
+                            <h4 class="section-title">👤 Owner Information</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Owner Name *</label>
+                                        <input type="text" name="owner_name" class="form-control" required
+                                               value="{% if form_data.owner_name %}{{ form_data.owner_name }}{% else %}{{ customer.first_name }} {{ customer.last_name }}{% endif %}">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Phone Number *</label>
+                                        <input type="tel" name="owner_phone" class="form-control" required
+                                               value="{{ form_data.owner_phone|default:customer.phone }}">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Email Address *</label>
+                                        <input type="email" name="owner_email" class="form-control" required readonly
+                                               value="{{ customer.email }}" style="background-color: #f8f9fa;">
+                                        <small class="text-muted">Linked to your account</small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Emergency Contact</label>
+                                        <input type="tel" name="emergency_contact" class="form-control"
+                                               value="{{ form_data.emergency_contact|default:'' }}"
+                                               placeholder="Emergency contact number">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Training Details Section -->
+                        <div class="form-section">
+                            <h4 class="section-title">📅 Training Schedule</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Start Date *</label>
+                                        <input type="date" name="start_date" id="startDate" class="form-control"
+                                               min="{{ today|date:'Y-m-d' }}" required
+                                               value="{{ form_data.start_date|default:'' }}">
+                                        <small class="text-muted">Training duration: 7 days</small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Preferred Time Slot *</label>
+                                        <select name="training_time_slot" class="form-control" required>
+                                            <option value="">Select Time Slot</option>
+                                            {% for value, label in time_slots %}
+                                                <option value="{{ value }}"
+                                                    {% if form_data.training_time_slot == value %}selected{% endif %}>
+                                                    {{ label }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Availability and Cost Display -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="availability-display d-none" id="availabilityDisplay">
+                                        <div class="spinner-border text-white d-none" id="availabilitySpinner" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <p class="mb-0" id="availabilityMessage">Select dates to check availability</p>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="cost-display d-none" id="costDisplay">
+                                        <div id="costDetails"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Training Goals Section -->
+                        <div class="form-section">
+                            <h4 class="section-title">🎯 Training Goals & Information</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Training Goals *</label>
+                                        <textarea name="training_goals" class="form-control" rows="4" required
+                                                  placeholder="What would you like your pet to learn? (e.g., sit, stay, come, leash walking...)">{{ form_data.training_goals|default:'' }}</textarea>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Behavioral Issues</label>
+                                        <textarea name="behavioral_issues" class="form-control" rows="4"
+                                                  placeholder="Any behavioral problems to address? (e.g., excessive barking, jumping, aggression...)">{{ form_data.behavioral_issues|default:'' }}</textarea>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Previous Training Experience</label>
+                                        <textarea name="previous_training" class="form-control" rows="3"
+                                                  placeholder="Any previous training your pet has received...">{{ form_data.previous_training|default:'' }}</textarea>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Special Requirements</label>
+                                        <textarea name="special_requirements" class="form-control" rows="3"
+                                                  placeholder="Any special needs, medical conditions, or preferences...">{{ form_data.special_requirements|default:'' }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Terms and Submit -->
+                        <div class="form-section">
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-info-circle me-2"></i>Training Program Details:</h6>
+                                <ul class="mb-0">
+                                    <li>📅 <strong>Duration:</strong> 7 consecutive days of intensive training</li>
+                                    <li>🏠 <strong>Location:</strong> At our professional training facility</li>
+                                    <li>📊 <strong>Progress Tracking:</strong> Daily skill assessments and photo updates</li>
+                                    <li>🎓 <strong>Certification:</strong> Graduation certificate upon completion</li>
+                                    <li>📞 <strong>Support:</strong> 30-day post-training support included</li>
+                                </ul>
+                            </div>
+
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                                    <i class="fas fa-graduation-cap me-2"></i>Book Training Program
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Only initialize booking form if user is authenticated
+    {% if user_authenticated %}
+    const startDate = document.getElementById('startDate');
+    const petType = document.getElementById('petType');
+    const availabilityDisplay = document.getElementById('availabilityDisplay');
+    const availabilitySpinner = document.getElementById('availabilitySpinner');
+    const availabilityMessage = document.getElementById('availabilityMessage');
+    const costDisplay = document.getElementById('costDisplay');
+    const costDetails = document.getElementById('costDetails');
+    const submitBtn = document.getElementById('submitBtn');
+
+    let availabilityCheckTimeout;
+
+    // Function to check availability and calculate cost
+    function checkAvailabilityAndCost() {
+        if (!startDate.value || !petType.value) {
+            availabilityDisplay.classList.add('d-none');
+            costDisplay.classList.add('d-none');
+            submitBtn.disabled = true;
+            return;
+        }
+
+        availabilityDisplay.classList.remove('d-none');
+        availabilitySpinner.classList.remove('d-none');
+        availabilityMessage.textContent = 'Checking availability...';
+
+        fetch('/training/check-availability/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                start_date: startDate.value,
+                pet_type: petType.value
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            availabilitySpinner.classList.add('d-none');
+
+            if (data.available) {
+                availabilityMessage.innerHTML = '✅ Training slots available!<br><small>End Date: ' +
+                    new Date(data.end_date).toLocaleDateString() + '</small>';
+
+                // Show cost
+                costDetails.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Training Duration:</strong><br>7 Days Intensive Program
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Total Cost: ₹${data.cost}</strong><br>
+                            <small>Includes all training sessions</small>
+                        </div>
+                    </div>
+                `;
+                costDisplay.classList.remove('d-none');
+                submitBtn.disabled = false;
+            } else {
+                availabilityMessage.textContent = '❌ ' + data.message;
+                costDisplay.classList.add('d-none');
+                submitBtn.disabled = true;
+            }
+        })
+        .catch(error => {
+            availabilitySpinner.classList.add('d-none');
+            availabilityMessage.textContent = '❌ Error checking availability';
+            costDisplay.classList.add('d-none');
+            submitBtn.disabled = true;
+        });
+    }
+
+    // Event listeners with debouncing
+    [startDate, petType].forEach(element => {
+        element.addEventListener('change', function() {
+            clearTimeout(availabilityCheckTimeout);
+            availabilityCheckTimeout = setTimeout(checkAvailabilityAndCost, 500);
+        });
+    });
+
+    // Form validation
+    document.getElementById('trainingForm').addEventListener('submit', function(e) {
+        if (submitBtn.disabled) {
+            e.preventDefault();
+            alert('Please ensure all required fields are filled and training slots are available.');
+        }
+    });
+
+    // Initial check if form has values
+    if (startDate.value && petType.value) {
+        checkAvailabilityAndCost();
+    }
+
+    // Set minimum age validation message
+    const petAgeInput = document.querySelector('input[name="pet_age"]');
+    if (petAgeInput) {
+        petAgeInput.addEventListener('input', function() {
+            if (this.value < 3 && this.value !== '') {
+                this.setCustomValidity('Pets must be at least 3 months old for training.');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    }
+    {% endif %}
+});
+
+// Smooth scrolling for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+</script>
+
+{% endblock %}

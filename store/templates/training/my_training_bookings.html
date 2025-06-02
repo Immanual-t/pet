@@ -1,0 +1,547 @@
+<!-- File: store/templates/training/my_training_bookings.html -->
+<!-- Create this file in store/templates/training/ directory -->
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        color: white;
+        padding: 60px 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="rgba(255,255,255,0.1)"><polygon points="1000,100 1000,0 0,100"/></svg>');
+        background-size: cover;
+    }
+
+    .page-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .training-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-left: 5px solid;
+    }
+
+    .training-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+
+    .training-card.pending { border-left-color: #ffc107; }
+    .training-card.approved { border-left-color: #28a745; }
+    .training-card.in_progress { border-left-color: #17a2b8; }
+    .training-card.completed { border-left-color: #6f42c1; }
+    .training-card.cancelled { border-left-color: #dc3545; }
+
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-approved {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-in_progress {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .status-completed {
+        background: #e2e3ff;
+        color: #383d41;
+    }
+
+    .status-cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .pet-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        margin-right: 20px;
+    }
+
+    .progress-section {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+
+    .progress-bar-container {
+        background: #e9ecef;
+        border-radius: 10px;
+        height: 20px;
+        overflow: hidden;
+        margin: 10px 0;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        transition: width 0.8s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 0.85rem;
+    }
+
+    .skill-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .skill-item {
+        text-align: center;
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .skill-score {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #11998e;
+    }
+
+    .action-buttons {
+        margin-top: 20px;
+    }
+
+    .btn-custom {
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: 600;
+        margin: 5px;
+        transition: all 0.3s ease;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #666;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        color: #ddd;
+    }
+
+    .schedule-mini {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 15px 0;
+    }
+
+    .day-mini {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: bold;
+        color: #666;
+        position: relative;
+    }
+
+    .day-mini.completed {
+        background: #28a745;
+        color: white;
+    }
+
+    .day-mini.current {
+        background: #ffc107;
+        color: #333;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 40px 0;
+        }
+
+        .training-card {
+            padding: 20px;
+        }
+
+        .pet-avatar {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+
+        .skill-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+
+<!-- Page Header -->
+<section class="page-header">
+    <div class="page-content">
+        <div class="container">
+            <h1 class="display-5 mb-3" data-aos="fade-up">🎓 My Pet Training</h1>
+            <p class="lead mb-0" data-aos="fade-up" data-aos-delay="200">
+                Track your pet's training progress and achievements
+            </p>
+        </div>
+    </div>
+</section>
+
+<div class="container py-5">
+
+    <!-- Quick Stats -->
+    {% if bookings %}
+    <div class="row mb-4">
+        <div class="col-md-3 col-6">
+            <div class="text-center p-3 bg-light rounded">
+                <h4 class="text-primary mb-0">{{ bookings|length }}</h4>
+                <small class="text-muted">Total Trainings</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="text-center p-3 bg-light rounded">
+                <h4 class="text-success mb-0">
+                    {% for booking in bookings %}
+                        {% if booking.status == 'completed' %}{{ forloop.counter0|add:1 }}{% endif %}
+                    {% empty %}0{% endfor %}
+                </h4>
+                <small class="text-muted">Completed</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="text-center p-3 bg-light rounded">
+                <h4 class="text-info mb-0">
+                    {% for booking in bookings %}
+                        {% if booking.status == 'in_progress' %}{{ forloop.counter0|add:1 }}{% endif %}
+                    {% empty %}0{% endfor %}
+                </h4>
+                <small class="text-muted">In Progress</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="text-center p-3 bg-light rounded">
+                <h4 class="text-warning mb-0">
+                    {% for booking in bookings %}
+                        {% if booking.status == 'pending' %}{{ forloop.counter0|add:1 }}{% endif %}
+                    {% empty %}0{% endfor %}
+                </h4>
+                <small class="text-muted">Pending</small>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Training Bookings -->
+    {% for booking in bookings %}
+    <div class="training-card {{ booking.status }}" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1|mul:100 }}">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="d-flex align-items-start">
+                    <div class="pet-avatar">
+                        {% if booking.pet_type == 'dog' %}🐕{% else %}🐱{% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h4 class="mb-1">{{ booking.pet_name }}'s Training</h4>
+                                <p class="text-muted mb-0">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    {{ booking.start_date|date:"M j, Y" }} - {{ booking.end_date|date:"M j, Y" }}
+                                    <span class="ms-3">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {{ booking.get_training_time_slot_display }}
+                                    </span>
+                                </p>
+                            </div>
+                            <span class="status-badge status-{{ booking.status }}">
+                                {{ booking.get_status_display }}
+                            </span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Pet Type:</strong> {{ booking.get_pet_type_display }}</p>
+                                <p class="mb-1"><strong>Age:</strong> {{ booking.pet_age }} months</p>
+                                {% if booking.pet_breed %}
+                                <p class="mb-1"><strong>Breed:</strong> {{ booking.pet_breed }}</p>
+                                {% endif %}
+                                <p class="mb-1"><strong>Skill Level:</strong> {{ booking.get_current_skill_level_display }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Booking ID:</strong> #{{ booking.id }}</p>
+                                <p class="mb-1"><strong>Total Cost:</strong> <span class="text-success">₹{{ booking.total_price }}</span></p>
+                                {% if booking.assigned_trainer %}
+                                <p class="mb-1"><strong>Trainer:</strong> {{ booking.assigned_trainer }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if booking.training_goals %}
+                        <div class="mt-3">
+                            <strong>Training Goals:</strong>
+                            <p class="text-muted mb-0">{{ booking.training_goals|truncatechars:100 }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                {% if booking.status == 'in_progress' or booking.status == 'completed' %}
+                <!-- Progress Section -->
+                <div class="progress-section">
+                    <h6 class="text-center mb-3">Training Progress</h6>
+
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: {{ booking.progress_percentage }}%">
+                            {{ booking.progress_percentage }}%
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-3">
+                        <small class="text-muted">Day {{ booking.current_day }} of 7</small>
+                    </div>
+
+                    <!-- Mini Schedule -->
+                    <div class="schedule-mini">
+                        {% for day in "1234567"|make_list %}
+                        <div class="day-mini {% if day|add:0 <= booking.current_day %}completed{% endif %} {% if day|add:0 == booking.current_day|add:1 %}current{% endif %}">
+                            {{ day }}
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Skill Scores -->
+                    {% if booking.status == 'completed' or booking.current_day > 0 %}
+                    <div class="skill-grid">
+                        <div class="skill-item">
+                            <div class="skill-score">{{ booking.obedience_score }}%</div>
+                            <small>🎯 Obedience</small>
+                        </div>
+                        <div class="skill-item">
+                            <div class="skill-score">{{ booking.socialization_score }}%</div>
+                            <small>🤝 Social</small>
+                        </div>
+                        <div class="skill-item">
+                            <div class="skill-score">{{ booking.leash_training_score }}%</div>
+                            <small>🚶 Leash</small>
+                        </div>
+                        <div class="skill-item">
+                            <div class="skill-score">{{ booking.basic_commands_score }}%</div>
+                            <small>📝 Commands</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% elif booking.status == 'approved' %}
+                <div class="progress-section text-center">
+                    <h6 class="text-success mb-3">✅ Training Approved!</h6>
+                    <p class="text-muted">Training will start on {{ booking.start_date|date:"M j, Y" }}</p>
+                    {% now "Y-m-d" as today %}
+                    {% if booking.start_date|date:"Y-m-d" > today %}
+                    <div class="alert alert-info p-2">
+                        <small>
+                            <i class="fas fa-clock me-1"></i>
+                            Starts in {{ booking.start_date|timeuntil }}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+                {% elif booking.status == 'pending' %}
+                <div class="progress-section text-center">
+                    <h6 class="text-warning mb-3">⏳ Awaiting Approval</h6>
+                    <p class="text-muted">We'll review your booking and get back to you within 24 hours.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            {% if booking.status == 'in_progress' or booking.status == 'completed' %}
+            <a href="/my-training-bookings/{{ booking.id }}/" class="btn btn-primary btn-custom">
+                <i class="fas fa-eye me-1"></i>View Details
+            </a>
+            {% endif %}
+
+            {% if booking.status == 'completed' %}
+            <button class="btn btn-success btn-custom" onclick="downloadCertificate({{ booking.id }})">
+                <i class="fas fa-certificate me-1"></i>Download Certificate
+            </button>
+            {% endif %}
+
+            {% if booking.status == 'pending' %}
+            <button class="btn btn-outline-danger btn-custom" onclick="cancelTraining({{ booking.id }})">
+                <i class="fas fa-times me-1"></i>Cancel Booking
+            </button>
+            {% endif %}
+
+            <a href="/pet-updates/booking/{{ booking.id }}/" class="btn btn-outline-info btn-custom">
+                <i class="fas fa-camera me-1"></i>View Photos
+            </a>
+        </div>
+    </div>
+    {% empty %}
+    <!-- Empty State -->
+    <div class="empty-state" data-aos="fade-up">
+        <div class="empty-icon">🎓</div>
+        <h3>No Training Bookings Yet</h3>
+        <p class="lead text-muted mb-4">
+            Start your pet's learning journey with our professional training programs!
+        </p>
+        <a href="/training/" class="btn btn-primary btn-lg">
+            <i class="fas fa-graduation-cap me-2"></i>Book Training Now
+        </a>
+    </div>
+    {% endfor %}
+
+    <!-- Pagination -->
+    {% if bookings.has_other_pages %}
+    <nav aria-label="Training pagination" class="mt-5">
+        <ul class="pagination justify-content-center">
+            {% if bookings.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ bookings.previous_page_number }}">Previous</a>
+                </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">Page {{ bookings.number }} of {{ bookings.paginator.num_pages }}</span>
+            </li>
+
+            {% if bookings.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ bookings.next_page_number }}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ bookings.paginator.num_pages }}">Last</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    {% if bookings %}
+    <div class="text-center mt-5">
+        <a href="/training/" class="btn btn-primary btn-lg me-3">
+            <i class="fas fa-plus me-2"></i>Book Another Training
+        </a>
+        <a href="/pet-updates/" class="btn btn-outline-primary btn-lg">
+            <i class="fas fa-camera me-2"></i>All Pet Updates
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Progress bar animations
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate progress bars on load
+    setTimeout(() => {
+        document.querySelectorAll('.progress-bar').forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 100);
+        });
+    }, 500);
+});
+
+// Certificate download function
+function downloadCertificate(bookingId) {
+    // In production, this would download a PDF certificate
+    alert(`Certificate for training #${bookingId} will be downloaded. This feature will be implemented with PDF generation.`);
+}
+
+// Cancel training function
+function cancelTraining(bookingId) {
+    if (confirm('Are you sure you want to cancel this training booking? This action cannot be undone.')) {
+        // In production, this would make an AJAX call to cancel
+        alert('Training cancellation feature will be implemented in production.');
+    }
+}
+
+// Auto-refresh for active trainings
+function autoRefreshProgress() {
+    const activeTrainings = document.querySelectorAll('.training-card.in_progress');
+    if (activeTrainings.length > 0) {
+        // In production, make AJAX calls to update progress
+        console.log('Auto-refreshing progress for active trainings');
+    }
+}
+
+// Refresh every 5 minutes for active trainings
+setInterval(autoRefreshProgress, 300000);
+
+// Add tooltip functionality for skill scores
+document.querySelectorAll('.skill-item').forEach(item => {
+    item.addEventListener('mouseenter', function() {
+        const skillName = this.querySelector('small').textContent;
+        const score = this.querySelector('.skill-score').textContent;
+        // Could add tooltip showing skill description
+    });
+});
+</script>
+
+{% endblock %}
